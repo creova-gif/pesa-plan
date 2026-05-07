@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Progress } from '@/app/components/ui/progress';
 
 // ── Bootstrap i18next (side-effect import — must be first) ────────────────────
 import '@/i18n';
@@ -555,13 +554,8 @@ export function useApp() {
   return context;
 }
 
-// Import components directly (no lazy loading to avoid circular dependencies)
-import { SplashScreens } from '@/app/components/onboarding/SplashScreens';
-import { LanguageChoice } from '@/app/components/onboarding/LanguageChoice';
-import { RegionChoice } from '@/app/components/onboarding/RegionChoice';
-import { UserTypeSelection } from '@/app/components/onboarding/UserTypeSelection';
-import { IncomeFrequencySelection } from '@/app/components/onboarding/IncomeFrequencySelection';
-import { GoalSetup } from '@/app/components/onboarding/GoalSetup';
+// Import components
+import { OnboardingFlow } from '@/app/components/onboarding/OnboardingFlow';
 import { Dashboard } from '@/app/components/dashboard/Dashboard';
 import { Toaster } from '@/app/components/ui/sonner';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
@@ -572,33 +566,25 @@ const INACTIVITY_MS = 5 * 60 * 1000; // 5 minutes
 // App Content
 function AppContent() {
   const { state, completeOnboarding } = useApp();
-  const [onboardingStep, setOnboardingStep] = useState<
-    'splash' | 'language' | 'region' | 'userType' | 'incomeFreq' | 'goal' | 'complete'
-  >('splash');
 
   // ── App Lock ────────────────────────────────────────────────────────────────
   const [isAppLocked, setIsAppLocked] = useState(() => state.appLockEnabled && state.onboardingComplete);
 
-  // AUDIT FIX #3a: Re-lock when appLockEnabled is toggled ON in Settings
   useEffect(() => {
     if (state.appLockEnabled && state.onboardingComplete) {
       setIsAppLocked(true);
     }
   }, [state.appLockEnabled]);
 
-  // AUDIT FIX #3b: Re-lock when app returns from background (tab/app switch)
   useEffect(() => {
     if (!state.appLockEnabled || !state.onboardingComplete) return;
     const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        setIsAppLocked(true);
-      }
+      if (document.visibilityState === 'visible') setIsAppLocked(true);
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [state.appLockEnabled, state.onboardingComplete]);
 
-  // AUDIT FIX: Inactivity re-lock after 5 minutes of no interaction
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!state.appLockEnabled || !state.onboardingComplete) return;
@@ -619,61 +605,11 @@ function AppContent() {
     return <AppLock mode="unlock" storedPin={state.appLockPin} onUnlocked={() => setIsAppLocked(false)} />;
   }
 
-  const handleStepComplete = (nextStep: typeof onboardingStep) => {
-    setOnboardingStep(nextStep);
-  };
-
-  const handleOnboardingComplete = () => {
-    completeOnboarding();
-    setOnboardingStep('complete');
-  };
-
-  // Show dashboard if onboarding is complete
-  if (state.onboardingComplete || onboardingStep === 'complete') {
+  if (state.onboardingComplete) {
     return <Dashboard />;
   }
 
-  // Progress bar for onboarding
-  const getProgress = () => {
-    const steps = ['splash', 'language', 'region', 'userType', 'incomeFreq', 'goal'];
-    const currentIndex = steps.indexOf(onboardingStep);
-    return ((currentIndex + 1) / steps.length) * 100;
-  };
-
-  return (
-    <div className="relative">
-      {/* Progress Indicator */}
-      {onboardingStep !== 'splash' && onboardingStep !== 'complete' && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed top-0 left-0 right-0 z-50"
-        >
-          <Progress value={getProgress()} className="h-1 rounded-none" />
-        </motion.div>
-      )}
-
-      {/* Onboarding Screens */}
-      {onboardingStep === 'splash' && (
-        <SplashScreens onComplete={() => handleStepComplete('language')} />
-      )}
-      {onboardingStep === 'language' && (
-        <LanguageChoice onComplete={() => handleStepComplete('region')} />
-      )}
-      {onboardingStep === 'region' && (
-        <RegionChoice onComplete={() => handleStepComplete('userType')} />
-      )}
-      {onboardingStep === 'userType' && (
-        <UserTypeSelection onComplete={() => handleStepComplete('incomeFreq')} />
-      )}
-      {onboardingStep === 'incomeFreq' && (
-        <IncomeFrequencySelection onComplete={() => handleStepComplete('goal')} />
-      )}
-      {onboardingStep === 'goal' && (
-        <GoalSetup onComplete={handleOnboardingComplete} />
-      )}
-    </div>
-  );
+  return <OnboardingFlow onComplete={completeOnboarding} />;
 }
 
 // Main App
