@@ -1,4 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="42" fill="#059669"/>
-  <text x="96" y="125" font-family="system-ui,sans-serif" font-size="100" font-weight="900" text-anchor="middle" fill="white">P</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="192" height="192" rx="44" fill="url(#bg)"/>
+  <!-- Subtle inner glow -->
+  <rect width="192" height="192" rx="44" fill="white" opacity="0.06"/>
+  <!-- Coin circle -->
+  <circle cx="96" cy="88" r="52" fill="url(#coin)" opacity="0.95"/>
+  <circle cx="96" cy="88" r="44" fill="none" stroke="#fde68a" stroke-width="3" opacity="0.5"/>
+  <!-- Dollar sign -->
+  <text x="96" y="107" font-family="system-ui,sans-serif" font-size="52" font-weight="900" text-anchor="middle" fill="#92400e">$</text>
+  <!-- Bag tie / knot top -->
+  <ellipse cx="96" cy="36" rx="14" ry="8" fill="#065f46" opacity="0.7"/>
+  <rect x="89" y="30" width="14" height="12" rx="4" fill="#065f46" opacity="0.7"/>
+  <!-- "PESA" label under coin -->
+  <text x="96" y="162" font-family="system-ui,sans-serif" font-size="18" font-weight="900" text-anchor="middle" fill="white" letter-spacing="4" opacity="0.9">PESA</text>
 </svg>

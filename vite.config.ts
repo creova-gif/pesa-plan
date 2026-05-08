@@ -25,20 +25,23 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.svg', 'icon-512.svg'],
+      includeAssets: ['icon-192.svg', 'icon-512.svg', 'icon-maskable-512.svg'],
       manifest: {
-        name: 'Pesa Plan',
+        name: 'PesaPlan – Budget & Finance',
         short_name: 'PesaPlan',
-        description: 'Personal finance tracker for East Africa',
+        description: 'Track spending, set savings goals, and manage mobile money (M-Pesa, Airtel, Tigo) — built for East Africa. Works offline, 100% private.',
         theme_color: '#059669',
         background_color: '#030712',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        categories: ['finance', 'productivity'],
+        lang: 'en',
         icons: [
-          { src: '/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-          { src: '/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: '/icon-192.svg', sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
+          { src: '/icon-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
+          { src: '/icon-maskable-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
         ],
       },
       workbox: {
