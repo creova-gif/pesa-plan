@@ -1,5 +1,5 @@
 /**
- * BudgetEase Translation Utility
+ * PesaPlan Translation Utility
  *
  * Two-layer system:
  *   1. `t(key, lang)` — synchronous function, safe for class components & contexts

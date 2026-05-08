@@ -1,5 +1,5 @@
 /**
- * BudgetEase i18n Engine
+ * PesaPlan i18n Engine
  * Uses react-i18next + i18next for production-grade bilingual support.
  *
  * Languages: English (en) · Kiswahili (sw)
