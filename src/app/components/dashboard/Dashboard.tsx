@@ -285,7 +285,7 @@ export function Dashboard() {
   const hasMonthlyData = monthlyStats.income > 0 || monthlyStats.expenses > 0;
 
   return (
-    <div className="flex flex-col h-screen bg-emerald-50 overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#f4f3ef' }}>
       <div
         className="flex-1 overflow-y-auto"
         onTouchStart={onMainTouchStart}
@@ -298,17 +298,13 @@ export function Dashboard() {
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
               {/* ── Hero Header ── */}
-              <div className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700 px-5 pt-14 pb-28 overflow-hidden">
-                {/* Decorative blobs */}
-                <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full" />
-                <div className="absolute top-24 -right-6 w-28 h-28 bg-teal-400/10 rounded-full" />
-                <div className="absolute -bottom-6 -left-6 w-36 h-36 bg-emerald-400/10 rounded-full" />
+              <div className="relative px-5 pt-14 pb-28 overflow-hidden" style={{ background: '#0b1a0d' }}>
 
                 {/* Top row: greeting + streak + notifs */}
                 <div className="flex items-start justify-between mb-5 relative">
                   <div>
-                    <p className="text-emerald-200 text-xs mb-0.5">{getGreeting(state.userType, lang)}</p>
-                    <p className="text-white font-black" style={{ fontSize: '1.1rem' }}>
+                    <p className="text-white/45 text-xs mb-0.5">{getGreeting(state.userType, lang)}</p>
+                    <p className="text-white font-bold" style={{ fontSize: '1.15rem' }}>
                       {state.userName ? state.userName : 'PesaPlan'}
                     </p>
                   </div>
@@ -328,7 +324,7 @@ export function Dashboard() {
 
                 {/* Balance */}
                 <div className="text-center mb-4 relative">
-                  <p className="text-emerald-200 text-xs mb-1">{t('totalBalance', lang)}</p>
+                  <p className="text-white/45 text-xs mb-1">{t('totalBalance', lang)}</p>
                   <motion.p
                     key={animatedBalance}
                     className="text-white font-black tracking-tight"
@@ -336,7 +332,7 @@ export function Dashboard() {
                   >
                     {fmt(animatedBalance)}
                   </motion.p>
-                  <div className="flex justify-center gap-3 mt-1 text-xs text-emerald-200">
+                  <div className="flex justify-center gap-3 mt-1 text-xs text-white/45">
                     <span>💵 {fmtK(state.cashBalance)}</span>
                     <span>·</span>
                     <span>📱 {fmtK(state.mobileMoneyBalance)}</span>
@@ -346,12 +342,12 @@ export function Dashboard() {
 
                 {/* Period selector */}
                 <div className="flex justify-center mb-4">
-                  <div className="flex bg-black/20 rounded-2xl p-1 gap-1">
+                  <div className="flex rounded-2xl p-1 gap-1" style={{ background: 'rgba(255,255,255,0.10)' }}>
                     {(['today', 'week', 'month'] as Period[]).map(p => (
                       <motion.button
                         key={p} onClick={() => setPeriod(p)} whileTap={{ scale: 0.93 }}
                         className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                          period === p ? 'bg-white text-emerald-700 shadow' : 'text-white/70 hover:text-white'
+                          period === p ? 'bg-white text-green-800 shadow' : 'text-white/60 hover:text-white'
                         }`}
                       >
                         {p === 'today' ? t('today', lang) : p === 'week' ? t('week', lang) : t('month', lang)}
@@ -363,12 +359,12 @@ export function Dashboard() {
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2 mb-5">
                   {[
-                    { label: t('income_label', lang), value: periodStats.income, color: 'text-emerald-200', sign: '+' },
+                    { label: t('income_label', lang), value: periodStats.income, color: 'text-green-300', sign: '+' },
                     { label: t('spent', lang), value: periodStats.expenses, color: 'text-red-300', sign: '-' },
                     { label: t('left', lang), value: Math.abs(periodStats.left), color: periodStats.left >= 0 ? 'text-white' : 'text-red-300', sign: periodStats.left >= 0 ? '' : '-' },
                   ].map(({ label, value, color, sign }) => (
-                    <div key={label} className="bg-white/10 backdrop-blur rounded-2xl px-2 py-3 text-center">
-                      <p className="text-emerald-200 text-xs mb-1">{label}</p>
+                    <div key={label} className="rounded-2xl px-2 py-3 text-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                      <p className="text-white/45 text-xs mb-1">{label}</p>
                       <p className={`text-sm font-bold ${color} tabular-nums`}>{sign}{fmtK(value)}</p>
                     </div>
                   ))}
@@ -397,7 +393,8 @@ export function Dashboard() {
                   <motion.button
                     whileTap={{ scale: 0.93 }}
                     onClick={() => { setTxType('expense'); setShowAddTx(true); }}
-                    className="bg-white/15 hover:bg-white/25 rounded-2xl p-3 flex flex-col items-center gap-1.5 transition"
+                    className="rounded-2xl p-3 flex flex-col items-center gap-1.5 transition"
+                    style={{ background: 'rgba(255,255,255,0.09)' }}
                   >
                     <MinusCircle className="w-5 h-5 text-red-300" />
                     <span className="text-xs text-white font-semibold">{t('addExpense', lang)}</span>
@@ -405,7 +402,8 @@ export function Dashboard() {
                   <motion.button
                     whileTap={{ scale: 0.93 }}
                     onClick={() => { setTxType('income'); setShowAddTx(true); }}
-                    className="bg-white/15 hover:bg-white/25 rounded-2xl p-3 flex flex-col items-center gap-1.5 transition"
+                    className="rounded-2xl p-3 flex flex-col items-center gap-1.5 transition"
+                    style={{ background: 'rgba(255,255,255,0.09)' }}
                   >
                     <PlusCircle className="w-5 h-5 text-green-300" />
                     <span className="text-xs text-white font-semibold">{t('addIncome', lang)}</span>
@@ -422,7 +420,8 @@ export function Dashboard() {
                       }
                       setShowAddTx(true);
                     }}
-                    className="bg-white/15 hover:bg-white/25 rounded-2xl p-3 flex flex-col items-center gap-1.5 transition"
+                    className="rounded-2xl p-3 flex flex-col items-center gap-1.5 transition"
+                    style={{ background: 'rgba(255,255,255,0.09)' }}
                   >
                     <RotateCcw className="w-5 h-5 text-yellow-300" />
                     <span className="text-xs text-white font-semibold">
@@ -438,9 +437,10 @@ export function Dashboard() {
                 {/* ── SEARCH BAR ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-                  className={`bg-white rounded-2xl shadow-md flex items-center gap-3 px-4 py-3 transition-all ${
-                    searchFocused ? 'ring-2 ring-emerald-400 shadow-emerald-100' : ''
+                  className={`bg-white rounded-2xl flex items-center gap-3 px-4 py-3 transition-all ${
+                    searchFocused ? '' : ''
                   }`}
+                  style={{ border: searchFocused ? '1px solid rgba(22,163,74,0.5)' : '1px solid #e8e7e4' }}
                 >
                   <Search className="w-4 h-4 text-gray-400 shrink-0" />
                   <input
@@ -452,21 +452,21 @@ export function Dashboard() {
                     placeholder={t('searchPlaceholder', lang)}
                     className="flex-1 text-sm text-gray-700 outline-none bg-transparent placeholder-gray-300"
                   />
-                  <div className="flex items-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full px-2 py-1 shrink-0">
-                    <Sparkles className="w-3 h-3" />
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700 }}>AI</span>
+                  <div className="flex items-center gap-1 rounded-full px-2 py-1 shrink-0" style={{ background: 'rgba(22,163,74,0.12)' }}>
+                    <Sparkles className="w-3 h-3 text-green-600" />
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#16a34a' }}>AI</span>
                   </div>
                 </motion.div>
 
                 {/* ── MONTHLY PROGRESS ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
-                  className="bg-white rounded-3xl shadow-md overflow-hidden"
+                  className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}
                 >
                   {/* Tinted header strip */}
-                  <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-5 pt-4 pb-3 flex items-center justify-between border-b border-emerald-100/60">
+                  <div className="px-5 pt-4 pb-3 flex items-center justify-between" style={{ borderBottom: '1px solid #f0efec' }}>
                     <div>
-                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-0.5">
+                      <p className="text-[10px] font-semibold text-green-700 uppercase tracking-wider mb-0.5">
                         {t('monthlySummary', lang)}
                       </p>
                       <p className="font-black text-gray-900 text-[0.95rem] leading-tight">
@@ -475,7 +475,8 @@ export function Dashboard() {
                     </div>
                     <button
                       onClick={() => setShowBudgetLimits(true)}
-                      className="flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-white border border-emerald-200 shadow-sm px-3 py-1.5 rounded-full hover:bg-emerald-50 transition"
+                      className="flex items-center gap-1.5 text-xs text-green-700 font-semibold px-3 py-1.5 rounded-full transition"
+                      style={{ background: '#f0faf0', border: '1px solid #bbf7d0' }}
                     >
                       <AlertTriangle className="w-3 h-3" />
                       {t('limits', lang)}
@@ -621,7 +622,7 @@ export function Dashboard() {
                 {budgetAlerts.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                    className="bg-white rounded-3xl shadow-md overflow-hidden"
+                    className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}
                   >
                     <div className="px-5 pt-4 pb-2 flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -672,7 +673,7 @@ export function Dashboard() {
                 {pieData.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-                    className="bg-white rounded-3xl shadow-md overflow-hidden"
+                    className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}
                   >
                     <div className="px-5 pt-5 pb-2 flex items-center justify-between">
                       <div>
@@ -773,7 +774,7 @@ export function Dashboard() {
                 {activeGoal && (
                   <motion.div
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}
-                    className="bg-white rounded-3xl shadow-md overflow-hidden"
+                    className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}
                   >
                     <div className="px-5 pt-4 pb-4">
                       <div className="flex items-center justify-between mb-3">
@@ -816,7 +817,7 @@ export function Dashboard() {
                 {/* ── RECENT TRANSACTIONS ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}
-                  className="bg-white rounded-3xl shadow-md overflow-hidden"
+                  className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}
                 >
                   <div className="flex items-center justify-between px-5 pt-4 pb-3">
                     <p className="font-black text-gray-900" style={{ fontSize: '1rem' }}>
@@ -845,7 +846,8 @@ export function Dashboard() {
                           <motion.button
                             whileTap={{ scale: 0.97 }}
                             onClick={() => { setTxType('expense'); setShowAddTx(true); }}
-                            className="bg-emerald-600 text-white px-6 py-2.5 rounded-2xl text-sm font-bold shadow-md"
+                            className="text-white px-6 py-2.5 rounded-xl text-sm font-semibold"
+                          style={{ background: '#16a34a' }}
                           >
                             {t('addFirstEntry', lang)}
                           </motion.button>
@@ -932,19 +934,19 @@ export function Dashboard() {
                 {/* ── AI INSIGHT BANNER ── */}
                 <motion.div
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
-                  className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-3xl shadow-md p-5 text-white relative overflow-hidden"
+                  className="rounded-2xl p-5 text-white relative overflow-hidden"
+                  style={{ background: '#0b1a0d', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/5 rounded-full" />
-                  <div className="flex items-start gap-3 relative">
-                    <div className="w-9 h-9 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
-                      <Sparkles className="w-4.5 h-4.5 text-yellow-300" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(22,163,74,0.2)' }}>
+                      <Sparkles className="w-4 h-4" style={{ color: '#4ade80' }} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-black text-sm">PesaPlan AI</p>
-                        <span className="bg-yellow-400 text-yellow-900 rounded-full px-1.5 py-0.5 font-bold" style={{ fontSize: '0.6rem' }}>AI</span>
+                        <p className="font-bold text-sm text-white">PesaPlan AI</p>
+                        <span className="rounded px-1.5 py-0.5 font-semibold text-green-300" style={{ fontSize: '0.6rem', background: 'rgba(22,163,74,0.2)' }}>AI</span>
                       </div>
-                      <p className="text-emerald-100 leading-relaxed" style={{ fontSize: '0.82rem' }}>
+                      <p className="text-white/55 leading-relaxed" style={{ fontSize: '0.82rem' }}>
                         {state.transactions.length === 0
                           ? (lang === 'sw' ? 'Karibu! Anza kurekodi matumizi yako leo kwa kubonyeza "Matumizi" hapo juu.' : 'Welcome! Start tracking your spending by tapping "Expense" above.')
                           : periodStats.expenses > periodStats.income && periodStats.income > 0
@@ -955,7 +957,8 @@ export function Dashboard() {
                   </div>
                   <button
                     onClick={() => window.dispatchEvent(new CustomEvent('pesaplan:open-ai'))}
-                    className="mt-3 w-full bg-white/15 hover:bg-white/25 rounded-2xl py-2.5 text-sm font-semibold transition text-center"
+                    className="mt-3 w-full rounded-xl py-2.5 text-sm font-semibold transition text-center text-white/60"
+                    style={{ background: 'rgba(255,255,255,0.07)' }}
                   >
                     {t('askAssistantMore', lang)}
                   </button>
@@ -992,8 +995,8 @@ export function Dashboard() {
       <nav
         role="navigation"
         aria-label={lang === 'sw' ? 'Urambazaji wa chini' : 'Bottom navigation'}
-        className="bg-white border-t border-gray-100 grid grid-cols-5 shadow-xl z-30 shrink-0 safe-area-bottom-nav"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="grid grid-cols-5 z-30 shrink-0 safe-area-bottom-nav"
+        style={{ background: '#ffffff', borderTop: '1px solid #ebebea', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {tabs.map(({ id, icon: Icon, sw, en }) => {
           const active = activeView === id;
@@ -1010,14 +1013,15 @@ export function Dashboard() {
               {active && (
                 <motion.div
                   layoutId="navPill"
-                  className="absolute inset-x-3 top-0 h-0.5 bg-emerald-500 rounded-full"
+                  className="absolute inset-x-4 top-0 h-[2px] rounded-full"
+                  style={{ background: '#16a34a' }}
                 />
               )}
-              <div className={`w-9 h-9 flex items-center justify-center rounded-2xl mb-0.5 transition-all ${active ? 'bg-emerald-50' : ''}`}>
-                <Icon className={`w-5 h-5 transition-colors ${active ? 'text-emerald-600' : 'text-gray-400'}`} />
+              <div className={`w-9 h-9 flex items-center justify-center rounded-xl mb-0.5 transition-all ${active ? '' : ''}`}
+                style={active ? { background: 'rgba(22,163,74,0.08)' } : {}}>
+                <Icon className="w-5 h-5 transition-colors" style={{ color: active ? '#16a34a' : '#9ca3af' }} />
               </div>
-              <span className={`text-xs font-semibold transition-colors ${active ? 'text-emerald-700' : 'text-gray-400'}`}
-                style={{ fontSize: '0.65rem' }}>
+              <span className="font-semibold transition-colors" style={{ fontSize: '0.63rem', color: active ? '#15803d' : '#9ca3af' }}>
                 {lang === 'sw' ? sw : en}
               </span>
             </motion.button>
