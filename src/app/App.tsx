@@ -6,6 +6,7 @@ import '@/i18n';
 import { syncI18nLanguage } from '@/i18n';
 import { Analytics } from '@/app/utils/analytics';
 import type { Region } from '@/app/utils/currency';
+import { schedulePush, pullIfNewer, deleteCloudData } from '@/lib/cloudSync';
 export type { Region };
 
 // Types
@@ -205,10 +206,30 @@ export function verifyPin(input: string, stored: string): boolean {
 function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(loadPersistedState);
 
-  // Persist state to localStorage whenever it changes
+  // On first mount, pull cloud data if it is newer than local storage
+  useEffect(() => {
+    pullIfNewer().then(cloudJson => {
+      if (!cloudJson) return;
+      try {
+        const parsed = JSON.parse(cloudJson);
+        setState({
+          ...defaultState,
+          ...parsed,
+          transactions: (parsed.transactions || []).map((t: any) => ({
+            ...t,
+            date: new Date(t.date),
+          })),
+        });
+      } catch {}
+    });
+  }, []);
+
+  // Persist to localStorage and schedule a background cloud push
   useEffect(() => {
     try {
-      localStorage.setItem('pesaplan_v1', JSON.stringify(state));
+      const json = JSON.stringify(state);
+      localStorage.setItem('pesaplan_v1', json);
+      schedulePush(json);
     } catch (e) {
       console.error('Failed to persist state', e);
     }
@@ -376,6 +397,7 @@ function AppProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem('pesaplan_v1');
     } catch (e) {}
+    deleteCloudData(); // fire-and-forget
     Analytics.clearCrashLog();
     setState(defaultState);
   };
