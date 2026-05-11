@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, CheckCircle, ChevronRight, X, Clock, Star } from 'lucide-react';
 import { useApp } from '@/app/App';
@@ -116,6 +116,12 @@ export function FinancialEducation() {
   const { state, completeLesson } = useApp();
   const lang = state.language;
   const [openLesson, setOpenLesson] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => setOpenLesson((e as CustomEvent<string>).detail);
+    window.addEventListener('maokoto:open-lesson', handler);
+    return () => window.removeEventListener('maokoto:open-lesson', handler);
+  }, []);
 
   const completedCount = state.lessonProgress?.length ?? 0;
   const totalCount = LESSONS.length;

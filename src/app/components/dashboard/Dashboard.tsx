@@ -645,7 +645,19 @@ function HomeTab({
 }
 
 // ─── BUDGET TAB ───────────────────────────────────────────────────────────────
-function BudgetTab({ onOpenBudgetLimits, onCategorySelect }: { onOpenBudgetLimits: () => void; onCategorySelect: (cat: string) => void }) {
+function BudgetTab({
+  onOpenBudgetLimits,
+  onCategorySelect,
+  onTxSelect,
+  onHistory,
+  onOpenLesson,
+}: {
+  onOpenBudgetLimits: () => void;
+  onCategorySelect: (cat: string) => void;
+  onTxSelect: (tx: Transaction) => void;
+  onHistory: () => void;
+  onOpenLesson: (lessonId: string) => void;
+}) {
   const { state, getCategorySpending } = useApp();
   const { language: lang, transactions, categoryBudgets } = state;
   const fmt = (n: number) => formatCurrency(n, state.region);
@@ -900,41 +912,52 @@ function BudgetTab({ onOpenBudgetLimits, onCategorySelect }: { onOpenBudgetLimit
       {/* Recent expenses */}
       {recentExpenses.length > 0 && (
         <div>
-          <SectionHeader
-            label={lang === 'sw' ? 'Miamala ya Hivi Karibuni' : 'Recent Transactions'}
-            sub={`${transactions.length} ${lang === 'sw' ? 'jumla' : 'total'}`}
-          />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <SectionHeader
+              label={lang === 'sw' ? 'Miamala ya Hivi Karibuni' : 'Recent Transactions'}
+              sub={`${transactions.length} ${lang === 'sw' ? 'jumla' : 'total'}`}
+            />
+            {transactions.length > 5 && (
+              <button
+                onClick={onHistory}
+                style={{ fontSize: 12, color: '#928F8B', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif', display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                {lang === 'sw' ? 'Zote' : 'See all'} <ChevronRight size={12} />
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {recentExpenses.map(tx => (
-              <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                key={tx.id}
+                onClick={() => onTxSelect(tx)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0', textAlign: 'left', width: '100%' }}
+              >
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    border: '1px solid #F4F4F2',
-                    background: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 16,
-                    flexShrink: 0,
+                    width: 36, height: 36, borderRadius: '50%',
+                    border: '1px solid #F4F4F2', background: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 16, flexShrink: 0,
                   }}
                 >
                   {getCategoryIcon(tx.category)}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: '#4D4845', fontFamily: 'Geist, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {tx.category}
+                    {tx.notes || tx.category}
                   </p>
                   <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
                     {tx.date.toLocaleDateString(lang === 'sw' ? 'sw' : 'en', { month: 'short', day: 'numeric' })}
                   </p>
                 </div>
-                <p style={{ fontSize: 14, fontWeight: 500, color: '#C9362B', flexShrink: 0, fontFamily: 'Geist, sans-serif' }}>
-                  -{fmt(tx.amount)}
-                </p>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: tx.type === 'expense' ? '#C9362B' : '#215B44', fontFamily: 'Geist, sans-serif' }}>
+                    {tx.type === 'expense' ? '-' : '+'}{fmt(tx.amount)}
+                  </p>
+                  <ChevronRight size={12} color="#A6A4A0" />
+                </div>
+              </button>
             ))}
           </div>
         </div>
@@ -952,30 +975,24 @@ function BudgetTab({ onOpenBudgetLimits, onCategorySelect }: { onOpenBudgetLimit
           />
           <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column' }}>
             {[
-              { en: 'Overspending', sw: 'Kutumia Kupita Kiasi', subEn: 'Guide to avoiding the habit of overspending', subSw: 'Mwongozo wa kuzuia tabia ya kutumia kupita kiasi' },
-              { en: 'Budgeting', sw: 'Bajeti', subEn: 'How to successfully manage your financial budget', subSw: 'Jinsi ya kusimamia bajeti yako ya kifedha' },
+              { en: 'Overspending', sw: 'Kutumia Kupita Kiasi', subEn: 'Guide to avoiding the habit of overspending', subSw: 'Mwongozo wa kuzuia tabia ya kutumia kupita kiasi', lessonId: 'debt-management' },
+              { en: 'Budgeting', sw: 'Bajeti', subEn: 'How to successfully manage your financial budget', subSw: 'Jinsi ya kusimamia bajeti yako ya kifedha', lessonId: 'rule-50-30-20' },
             ].map((a, i) => (
-              <div
+              <button
                 key={i}
+                onClick={() => onOpenLesson(a.lessonId)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 0',
-                  borderBottom: i === 0 ? '1px solid #F4F4F2' : 'none',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer',
+                  borderBottom: i === 0 ? '1px solid #F4F4F2' : 'none', width: '100%', textAlign: 'left',
                 }}
               >
                 <div
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
+                    width: 32, height: 32, borderRadius: 8,
                     background: 'rgba(78,136,111,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 14,
-                    flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, flexShrink: 0,
                   }}
                 >
                   📖
@@ -989,9 +1006,19 @@ function BudgetTab({ onOpenBudgetLimits, onCategorySelect }: { onOpenBudgetLimit
                   </p>
                 </div>
                 <ChevronRight size={14} color="#A6A4A0" style={{ flexShrink: 0 }} />
-              </div>
+              </button>
             ))}
           </div>
+          <button
+            onClick={() => onOpenLesson('rule-50-30-20')}
+            style={{
+              marginTop: 12, padding: '8px 16px', borderRadius: 999,
+              background: '#F6F6F4', color: '#4D4845', border: 'none',
+              fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'Geist, sans-serif',
+            }}
+          >
+            {lang === 'sw' ? 'Ona zaidi' : 'See more'}
+          </button>
         </div>
       </MkCard>
     </div>
@@ -1948,9 +1975,129 @@ function WalletTab({
   );
 }
 
+// ─── TRANSACTION DETAIL SHEET ─────────────────────────────────────────────────
+function TransactionDetailSheet({
+  tx,
+  onClose,
+  onEdit,
+  onDelete,
+}: {
+  tx: Transaction;
+  onClose: () => void;
+  onEdit: (tx: Transaction) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { state } = useApp();
+  const lang = state.language;
+  const fmt = (n: number) => formatCurrency(n, state.region);
+
+  const sourceLabel: Record<string, string> = {
+    cash: lang === 'sw' ? 'Pesa Taslimu' : 'Cash',
+    mpesa: 'M-Pesa',
+    airtel: 'Airtel Money',
+    tigo: 'Tigo Pesa',
+    bank: lang === 'sw' ? 'Benki' : 'Bank',
+    loan: lang === 'sw' ? 'Mkopo' : 'Loan',
+  };
+  const sourceIcon: Record<string, string> = {
+    cash: '💵', mpesa: '📱', airtel: '📱', tigo: '📱', bank: '🏦', loan: '💳',
+  };
+  const isExpense = tx.type === 'expense';
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 z-50"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 max-h-[85vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 4 }}>
+          <div style={{ width: 40, height: 4, borderRadius: 999, background: '#E5E3E0' }} />
+        </div>
+
+        {/* Category icon + name */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 20px 0' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: isExpense ? 'rgba(201,54,43,0.08)' : 'rgba(78,136,111,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 30, marginBottom: 12,
+          }}>
+            {getCategoryIcon(tx.category)}
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 500, color: '#4D4845', fontFamily: 'Geist, sans-serif', textAlign: 'center' }}>
+            {tx.notes || tx.category}
+          </p>
+          <p style={{ fontSize: 36, fontWeight: 300, color: isExpense ? '#C9362B' : '#215B44', fontFamily: 'Geist, sans-serif', margin: '8px 0' }}>
+            {isExpense ? '-' : '+'}{fmt(tx.amount)}
+          </p>
+        </div>
+
+        {/* Detail rows */}
+        <div style={{ margin: '16px 20px 0', borderRadius: 16, border: '1px solid #F4F4F2', overflow: 'hidden' }}>
+          {[
+            {
+              label: lang === 'sw' ? 'Tarehe' : 'Date',
+              value: tx.date.toLocaleDateString(lang === 'sw' ? 'sw' : 'en', { day: 'numeric', month: 'long', year: 'numeric' }) +
+                ' · ' + tx.date.toLocaleTimeString(lang === 'sw' ? 'sw' : 'en', { hour: '2-digit', minute: '2-digit' }),
+            },
+            { label: lang === 'sw' ? 'Chanzo' : 'Payment Source', value: `${sourceIcon[tx.source] || '💳'} ${sourceLabel[tx.source] || tx.source}` },
+            { label: lang === 'sw' ? 'Kundi' : 'Category', value: `${getCategoryIcon(tx.category)} ${tx.category}` },
+            { label: lang === 'sw' ? 'Aina' : 'Type', value: isExpense ? (lang === 'sw' ? 'Matumizi' : 'Expense') : (lang === 'sw' ? 'Mapato' : 'Income') },
+            ...(tx.notes ? [{ label: lang === 'sw' ? 'Maelezo' : 'Notes', value: tx.notes }] : []),
+          ].map((row, i, arr) => (
+            <div
+              key={row.label}
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '14px 16px',
+                borderBottom: i < arr.length - 1 ? '1px solid #F4F4F2' : 'none',
+              }}
+            >
+              <p style={{ fontSize: 13, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>{row.label}</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: '#4D4845', fontFamily: 'Geist, sans-serif', maxWidth: '60%', textAlign: 'right' }}>{row.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 12, padding: '16px 20px 32px' }}>
+          <button
+            onClick={() => { onEdit(tx); onClose(); }}
+            style={{
+              flex: 1, padding: '14px', borderRadius: 16, border: '1.5px solid #4E886F',
+              background: 'transparent', color: '#4E886F', fontSize: 14, fontWeight: 600,
+              fontFamily: 'Geist, sans-serif', cursor: 'pointer',
+            }}
+          >
+            {lang === 'sw' ? 'Hariri' : 'Edit'}
+          </button>
+          <button
+            onClick={() => { onDelete(tx.id); onClose(); }}
+            style={{
+              flex: 1, padding: '14px', borderRadius: 16, border: 'none',
+              background: 'rgba(201,54,43,0.08)', color: '#C9362B', fontSize: 14, fontWeight: 600,
+              fontFamily: 'Geist, sans-serif', cursor: 'pointer',
+            }}
+          >
+            {lang === 'sw' ? 'Futa' : 'Delete'}
+          </button>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
 // ─── MAIN DASHBOARD ───────────────────────────────────────────────────────────
 export function Dashboard() {
-  const { state, shouldShowDailySummary, markDailySummaryShown, toggleEmergencyMode } = useApp();
+  const { state, shouldShowDailySummary, markDailySummaryShown, toggleEmergencyMode, deleteTransaction } = useApp();
   const lang = state.language;
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
@@ -1966,6 +2113,7 @@ export function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [investView, setInvestView] = useState<{ view: 'purpose' | 'portfolioDetail' | 'stocksList'; name?: string } | null>(null);
+  const [selectedTxDetail, setSelectedTxDetail] = useState<Transaction | null>(null);
 
   // Swipe navigation
   const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -2141,6 +2289,9 @@ export function Dashboard() {
               <BudgetTab
                 onOpenBudgetLimits={() => setShowBudgetLimits(true)}
                 onCategorySelect={cat => setSelectedCategory(cat)}
+                onTxSelect={tx => setSelectedTxDetail(tx)}
+                onHistory={() => setShowHistory(true)}
+                onOpenLesson={id => window.dispatchEvent(new CustomEvent('maokoto:open-lesson', { detail: id }))}
               />
             )}
             {activeTab === 'savings' && (
@@ -2222,6 +2373,18 @@ export function Dashboard() {
       )}
       <AIAssistant />
       <NotificationCenter />
+
+      {/* Transaction detail sheet */}
+      <AnimatePresence>
+        {selectedTxDetail && (
+          <TransactionDetailSheet
+            tx={selectedTxDetail}
+            onClose={() => setSelectedTxDetail(null)}
+            onEdit={tx => setEditingTx(tx)}
+            onDelete={id => { deleteTransaction(id); setSelectedTxDetail(null); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
