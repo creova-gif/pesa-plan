@@ -2220,7 +2220,7 @@ export function Dashboard() {
       style={{
         width: '100%',
         maxWidth: 448,
-        minHeight: '100vh',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         background: '#F6F6F4',
@@ -2270,7 +2270,7 @@ export function Dashboard() {
       )}
 
       {/* Tab content */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
