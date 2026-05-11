@@ -1,0 +1,47 @@
+name: EAS Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options: [development, preview, production]
+      platform:
+        description: 'Platform'
+        required: true
+        default: 'all'
+        type: choice
+        options: [android, ios, all]
+
+jobs:
+  build:
+    name: EAS Build (${{ github.event.inputs.profile || 'preview' }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build
+        run: |
+          eas build \
+            --profile ${{ github.event.inputs.profile || 'preview' }} \
+            --platform ${{ github.event.inputs.platform || 'all' }} \
+            --non-interactive

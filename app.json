@@ -44,6 +44,12 @@
     "scheme": "maokoto",
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "aba46ac2-2b31-41b4-93f4-ca187ae501d2"
+      }
+    },
+    "owner": "jaymafie"
   }
 }
