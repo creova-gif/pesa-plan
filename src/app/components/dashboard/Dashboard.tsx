@@ -19,6 +19,9 @@ import { GoalsView } from './GoalsView';
 import { HistoryView } from './HistoryView';
 import { InsightsView } from './InsightsView';
 import { SettingsView } from './SettingsView';
+import { BudgetCategoryView } from './BudgetCategoryView';
+import { GoalDetailView } from './GoalDetailView';
+import { InvestDetailView } from './InvestDetailView';
 import { DailySummaryDialog } from './DailySummaryDialog';
 import { OfflineIndicator } from './OfflineIndicator';
 import { SpendingNudge } from './SpendingNudge';
@@ -642,7 +645,7 @@ function HomeTab({
 }
 
 // ─── BUDGET TAB ───────────────────────────────────────────────────────────────
-function BudgetTab({ onOpenBudgetLimits }: { onOpenBudgetLimits: () => void }) {
+function BudgetTab({ onOpenBudgetLimits, onCategorySelect }: { onOpenBudgetLimits: () => void; onCategorySelect: (cat: string) => void }) {
   const { state, getCategorySpending } = useApp();
   const { language: lang, transactions, categoryBudgets } = state;
   const fmt = (n: number) => formatCurrency(n, state.region);
@@ -803,7 +806,11 @@ function BudgetTab({ onOpenBudgetLimits }: { onOpenBudgetLimits: () => void }) {
             {topCategories.map(([cat, amount]) => {
               const budget = categoryBudgets[cat] || 0;
               return (
-                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  key={cat}
+                  onClick={() => onCategorySelect(cat)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', width: '100%' }}
+                >
                   <div
                     style={{
                       width: 36,
@@ -830,7 +837,8 @@ function BudgetTab({ onOpenBudgetLimits }: { onOpenBudgetLimits: () => void }) {
                     </div>
                     <StripeProgressBar value={amount} max={budget || amount} />
                   </div>
-                </div>
+                  <ChevronRight size={14} color="#A6A4A0" style={{ flexShrink: 0 }} />
+                </button>
               );
             })}
           </div>
@@ -1156,7 +1164,7 @@ function NewGoalSheet({
 }
 
 // ─── SAVINGS TAB ──────────────────────────────────────────────────────────────
-function SavingsTab({ onAddGoal }: { onAddGoal: () => void }) {
+function SavingsTab({ onAddGoal, onGoalSelect }: { onAddGoal: () => void; onGoalSelect: (goalId: string) => void }) {
   const { state, updateGoal, deleteGoal, addGoal } = useApp();
   const { language: lang, goals, roundUpEnabled, roundUpSavings } = state;
   const fmt = (n: number) => formatCurrency(n, state.region);
@@ -1250,7 +1258,11 @@ function SavingsTab({ onAddGoal }: { onAddGoal: () => void }) {
                 const pct = Math.min((goal.current / goal.target) * 100, 100);
                 return (
                   <MkCard key={goal.id}>
-                    <div style={{ padding: 16 }}>
+                    <button
+                      type="button"
+                      onClick={() => onGoalSelect(goal.id)}
+                      style={{ display: 'block', width: '100%', padding: 16, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                    >
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                         <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#4E886F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
                           {goal.emoji || '🎯'}
@@ -1261,18 +1273,13 @@ function SavingsTab({ onAddGoal }: { onAddGoal: () => void }) {
                             {Math.round(pct)}% {lang === 'sw' ? 'imekamilika' : 'complete'}
                           </p>
                         </div>
-                        <button
-                          onClick={() => deleteGoal(goal.id)}
-                          style={{ padding: 4, background: 'none', border: 'none', cursor: 'pointer', color: '#A6A4A0', flexShrink: 0 }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <ChevronRight size={16} color="#A6A4A0" style={{ flexShrink: 0, marginTop: 2 }} />
                       </div>
                       <p style={{ fontSize: 24, fontWeight: 400, color: '#4D4845', marginBottom: 12, fontFamily: 'Geist, sans-serif' }}>
                         {fmt(goal.target)}
                       </p>
                       <StripeProgressBar value={goal.current} max={goal.target} />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, marginBottom: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
                         <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
                           {fmt(goal.current)} {lang === 'sw' ? 'imehifadhiwa' : 'saved'}
                         </p>
@@ -1282,18 +1289,7 @@ function SavingsTab({ onAddGoal }: { onAddGoal: () => void }) {
                           </p>
                         )}
                       </div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          onClick={() => updateGoal(goal.id, 0)}
-                          style={{ flex: 1, background: '#F6F6F4', color: '#4D4845', fontSize: 12, fontWeight: 500, padding: '8px 0', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif' }}
-                        >
-                          {lang === 'sw' ? 'Weka Fedha' : 'Fund'}
-                        </button>
-                        <button style={{ background: '#F6F6F4', color: '#4D4845', fontSize: 12, fontWeight: 500, padding: '8px 12px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif' }}>
-                          🔒 {lang === 'sw' ? 'Toa' : 'Withdraw'}
-                        </button>
-                      </div>
-                    </div>
+                    </button>
                   </MkCard>
                 );
               })}
@@ -1366,7 +1362,11 @@ function generatePerformanceData(tf: Timeframe, base: number) {
   });
 }
 
-function InvestTab() {
+function InvestTab({ onPortfolioSelect, onStocksSelect, onNewPlan }: {
+  onPortfolioSelect: (name: string) => void;
+  onStocksSelect: () => void;
+  onNewPlan: () => void;
+}) {
   const { state } = useApp();
   const { language: lang } = state;
   const fmt = (n: number) => formatCurrency(n, state.region);
@@ -1470,7 +1470,8 @@ function InvestTab() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <SectionHeader label={L('Mikoba Yangu', 'My Portfolios', 'Mes portefeuilles', 'محافظي', 'Meus portfólios')} />
           <button
-            onClick={() => setShowSetup(true)}
+            type="button"
+            onClick={onNewPlan}
             style={{ fontSize: 12, color: '#FD8240', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif', fontWeight: 500 }}
           >
             + {L('Ongeza', 'Add', 'Ajouter', 'أضف', 'Adicionar')}
@@ -1479,7 +1480,11 @@ function InvestTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {portfolios.map(p => (
             <MkCard key={p.name}>
-              <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <button
+                type="button"
+                onClick={() => onPortfolioSelect(p.name)}
+                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+              >
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: `${p.color}1A`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <TrendingUp size={18} color={p.color} />
                 </div>
@@ -1488,7 +1493,8 @@ function InvestTab() {
                   <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif', marginTop: 2 }}>{fmt(p.amount)}</p>
                 </div>
                 <span style={{ fontSize: 14, fontWeight: 600, color: '#215B44', fontFamily: 'Geist, sans-serif', flexShrink: 0 }}>{p.pct}</span>
-              </div>
+                <ChevronRight size={14} color="#A6A4A0" style={{ flexShrink: 0 }} />
+              </button>
             </MkCard>
           ))}
         </div>
@@ -1496,7 +1502,7 @@ function InvestTab() {
 
       {/* Set up new investment plan CTA */}
       <button
-        onClick={() => setShowSetup(true)}
+        onClick={onNewPlan}
         style={{
           width: '100%', padding: '18px 20px', borderRadius: 16,
           background: 'linear-gradient(135deg, #215B44, #4E886F)',
@@ -1520,7 +1526,11 @@ function InvestTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
           {assetClasses.map(a => (
             <MkCard key={a.label}>
-              <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <button
+                type="button"
+                onClick={a.emoji === '📈' ? onStocksSelect : undefined}
+                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', background: 'none', border: 'none', cursor: a.emoji === '📈' ? 'pointer' : 'default', textAlign: 'left' }}
+              >
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F6F6F4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
                   {a.emoji}
                 </div>
@@ -1529,7 +1539,7 @@ function InvestTab() {
                   <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif', marginTop: 2 }}>{a.sub}</p>
                 </div>
                 <ChevronRight size={16} color="#A6A4A0" />
-              </div>
+              </button>
             </MkCard>
           ))}
         </div>
@@ -1916,6 +1926,9 @@ export function Dashboard() {
   const [showAI, setShowAI] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showBudgetLimits, setShowBudgetLimits] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [investView, setInvestView] = useState<{ view: 'purpose' | 'portfolioDetail' | 'stocksList'; name?: string } | null>(null);
 
   // Swipe navigation
   const touchStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -1982,6 +1995,34 @@ export function Dashboard() {
     return (
       <div style={{ width: '100%', maxWidth: 448, minHeight: '100vh', background: '#fff' }}>
         <GoalsView onBack={() => setShowGoalsView(false)} />
+      </div>
+    );
+  }
+  if (selectedCategory) {
+    return (
+      <div style={{ width: '100%', maxWidth: 448, minHeight: '100vh', background: '#F6F6F4' }}>
+        <BudgetCategoryView category={selectedCategory} onBack={() => setSelectedCategory(null)} />
+      </div>
+    );
+  }
+  if (selectedGoalId) {
+    const goal = state.goals.find(g => g.id === selectedGoalId);
+    if (goal) {
+      return (
+        <div style={{ width: '100%', maxWidth: 448, minHeight: '100vh', background: '#F6F6F4' }}>
+          <GoalDetailView goal={goal} onBack={() => setSelectedGoalId(null)} />
+        </div>
+      );
+    }
+  }
+  if (investView) {
+    return (
+      <div style={{ width: '100%', maxWidth: 448, minHeight: '100vh', background: '#F6F6F4' }}>
+        <InvestDetailView
+          initialView={investView.view}
+          portfolioName={investView.name}
+          onBack={() => setInvestView(null)}
+        />
       </div>
     );
   }
@@ -2060,12 +2101,24 @@ export function Dashboard() {
               />
             )}
             {activeTab === 'budget' && (
-              <BudgetTab onOpenBudgetLimits={() => setShowBudgetLimits(true)} />
+              <BudgetTab
+                onOpenBudgetLimits={() => setShowBudgetLimits(true)}
+                onCategorySelect={cat => setSelectedCategory(cat)}
+              />
             )}
             {activeTab === 'savings' && (
-              <SavingsTab onAddGoal={() => setShowGoalsView(true)} />
+              <SavingsTab
+                onAddGoal={() => setShowGoalsView(true)}
+                onGoalSelect={id => setSelectedGoalId(id)}
+              />
             )}
-            {activeTab === 'invest' && <InvestTab />}
+            {activeTab === 'invest' && (
+              <InvestTab
+                onPortfolioSelect={name => setInvestView({ view: 'portfolioDetail', name })}
+                onStocksSelect={() => setInvestView({ view: 'stocksList' })}
+                onNewPlan={() => setInvestView({ view: 'purpose' })}
+              />
+            )}
             {activeTab === 'wallet' && (
               <WalletTab
                 onAddIncome={openAddIncome}
