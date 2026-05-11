@@ -13,11 +13,18 @@ interface Message {
   text: string;
 }
 
-// ── Anthropic client (browser-side, requires VITE_ANTHROPIC_API_KEY) ──────────
+// ── Anthropic client (lazy, safe browser init) ─────────────────────────────
+// Wrapped in try/catch — the SDK pulls in Node built-ins that Vite externalizes.
+// If they fail at runtime we fall back to the rule-based engine silently.
 const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-const anthropicClient = apiKey
-  ? new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
-  : null;
+let anthropicClient: Anthropic | null = null;
+if (apiKey) {
+  try {
+    anthropicClient = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+  } catch {
+    console.warn('[Maokoto] Anthropic SDK init failed — using rule-based coach.');
+  }
+}
 
 // ── Build a rich system prompt from user's live financial data ─────────────────
 function buildSystemPrompt(state: ReturnType<typeof useApp>['state'], lang: Language): string {
@@ -519,6 +526,157 @@ function generateReply(
     return `💡 ${pool[Math.floor(Math.random() * pool.length)]}`;
   }
 
+  // ── New intents ──────────────────────────────────────────────────────────────
+
+  // Savings rate
+  if (matches(['savings rate', 'kiwango cha akiba', "taux d'épargne", 'معدل الادخار', 'taxa de poupança', 'how much saving', 'percent saving'])) {
+    const totalInc = income.reduce((s, tx) => s + tx.amount, 0);
+    const totalExp = expenses.reduce((s, tx) => s + tx.amount, 0);
+    const rate = totalInc > 0 ? Math.round(((totalInc - totalExp) / totalInc) * 100) : 0;
+    const emoji = rate >= 20 ? '🏆' : rate >= 10 ? '💪' : rate > 0 ? '📈' : '⚠️';
+    const r: Record<Language, string> = {
+      en: `Savings rate: ${rate}% ${emoji}. ${rate >= 20 ? 'Excellent — keep above 20%.' : rate >= 10 ? 'Good, aim for 20%+.' : 'Try saving at least 10% of income.'}`,
+      sw: `Kiwango cha akiba: ${rate}% ${emoji}. ${rate >= 20 ? 'Bora sana!' : 'Jaribu kuokoa angalau 10% ya mapato.'}`,
+      fr: `Taux d'épargne: ${rate}% ${emoji}. ${rate >= 20 ? 'Excellent!' : "Visez 20%+ de votre revenu."}`,
+      ar: `معدل الادخار: ${rate}% ${emoji}. ${rate >= 20 ? 'ممتاز!' : 'احرص على توفير 10% على الأقل.'}`,
+      pt: `Taxa de poupança: ${rate}% ${emoji}. ${rate >= 20 ? 'Excelente!' : 'Tente poupar ao menos 10% da renda.'}`,
+    };
+    return r[lang] || r.en;
+  }
+
+  // 50/30/20 rule
+  if (matches(['50 30 20', '50/30/20', 'budget rule', 'how to budget', 'kanuni', 'règle', 'regra'])) {
+    const totalInc = income.reduce((s, tx) => s + tx.amount, 0);
+    if (totalInc === 0) {
+      const r: Record<Language, string> = {
+        en: 'Log your income first, then I can show the 50/30/20 breakdown.',
+        sw: 'Rekodi mapato yako kwanza, kisha nitakuonyesha mgawanyo wa 50/30/20.',
+        fr: "Enregistrez vos revenus d'abord pour voir la répartition 50/30/20.",
+        ar: 'سجّل دخلك أولاً لأوضح مبدأ 50/30/20.',
+        pt: 'Registre sua renda primeiro para ver a divisão 50/30/20.',
+      };
+      return r[lang] || r.en;
+    }
+    const needs = fmt(Math.round(totalInc * 0.5));
+    const wants = fmt(Math.round(totalInc * 0.3));
+    const saves = fmt(Math.round(totalInc * 0.2));
+    const r: Record<Language, string> = {
+      en: `50/30/20 for ${fmt(totalInc)}:\n🏠 Needs (50%): ${needs}\n🎉 Wants (30%): ${wants}\n💰 Savings (20%): ${saves}`,
+      sw: `50/30/20 kwa ${fmt(totalInc)}:\n🏠 Mahitaji (50%): ${needs}\n🎉 Matakwa (30%): ${wants}\n💰 Akiba (20%): ${saves}`,
+      fr: `50/30/20 pour ${fmt(totalInc)}:\n🏠 Besoins (50%): ${needs}\n🎉 Envies (30%): ${wants}\n💰 Épargne (20%): ${saves}`,
+      ar: `50/30/20 لدخل ${fmt(totalInc)}:\n🏠 الضروريات (50%): ${needs}\n🎉 الرغبات (30%): ${wants}\n💰 المدخرات (20%): ${saves}`,
+      pt: `50/30/20 para ${fmt(totalInc)}:\n🏠 Necessidades (50%): ${needs}\n🎉 Desejos (30%): ${wants}\n💰 Poupança (20%): ${saves}`,
+    };
+    return r[lang] || r.en;
+  }
+
+  // Emergency fund
+  if (matches(['emergency fund', 'akiba ya dharura', "fonds d'urgence", 'صندوق طوارئ', 'fundo de emergência', 'rainy day'])) {
+    const target3Mo = thisMonthExp * 3 || expenses.slice(-90).reduce((s, tx) => s + tx.amount, 0);
+    const r: Record<Language, string> = {
+      en: `Emergency fund target (3 months): ${fmt(target3Mo)}. You have ${fmt(totalBalance)}. ${totalBalance >= target3Mo ? '✅ Covered!' : `Need ${fmt(target3Mo - totalBalance)} more.`}`,
+      sw: `Akiba ya dharura (miezi 3): ${fmt(target3Mo)}. Una ${fmt(totalBalance)}. ${totalBalance >= target3Mo ? '✅ Uko salama!' : `Unahitaji ${fmt(target3Mo - totalBalance)} zaidi.`}`,
+      fr: `Fonds d'urgence (3 mois): ${fmt(target3Mo)}. Vous avez ${fmt(totalBalance)}. ${totalBalance >= target3Mo ? '✅ Couvert!' : `Manque ${fmt(target3Mo - totalBalance)}.`}`,
+      ar: `صندوق طوارئ (3 أشهر): ${fmt(target3Mo)}. لديك ${fmt(totalBalance)}. ${totalBalance >= target3Mo ? '✅ محمي!' : `تحتاج ${fmt(target3Mo - totalBalance)} إضافية.`}`,
+      pt: `Fundo de emergência (3 meses): ${fmt(target3Mo)}. Você tem ${fmt(totalBalance)}. ${totalBalance >= target3Mo ? '✅ Coberto!' : `Faltam ${fmt(target3Mo - totalBalance)}.`}`,
+    };
+    return r[lang] || r.en;
+  }
+
+  // Round-up savings
+  if (matches(kw.roundup)) {
+    const saved = fmt(state.roundUpSavings || 0);
+    const r: Record<Language, string> = {
+      en: `Round-up savings: ${state.roundUpEnabled ? `✅ Active — ${saved} auto-saved!` : '⭕ Off — enable in Settings to auto-save spare change.'}`,
+      sw: `Akiba ya kuzungushia: ${state.roundUpEnabled ? `✅ Imewashwa — ${saved}!` : '⭕ Imezimwa — washa kwenye Mipangilio.'}`,
+      fr: `Arrondi auto: ${state.roundUpEnabled ? `✅ Actif — ${saved} économisés!` : '⭕ Désactivé — activez dans Paramètres.'}`,
+      ar: `التقريب التلقائي: ${state.roundUpEnabled ? `✅ نشط — وُفِّر ${saved}!` : '⭕ معطل — فعّله في الإعدادات.'}`,
+      pt: `Arredondamento: ${state.roundUpEnabled ? `✅ Ativo — ${saved} poupados!` : '⭕ Desativado — ative nas Configurações.'}`,
+    };
+    return r[lang] || r.en;
+  }
+
+  // Challenges
+  if (matches(kw.challenge)) {
+    const active = state.challenges.filter(c => !c.completed);
+    if (active.length === 0) {
+      const r: Record<Language, string> = {
+        en: 'No active savings challenges. Start one in Goals — they make saving fun! 🏆',
+        sw: 'Hakuna changamoto. Anza moja kwenye Malengo! 🏆',
+        fr: "Aucun défi actif. Commencez-en un dans Objectifs! 🏆",
+        ar: 'لا توجد تحديات نشطة. ابدأ واحدة في تبويب الأهداف! 🏆',
+        pt: 'Nenhum desafio ativo. Comece um na aba Metas! 🏆',
+      };
+      return r[lang] || r.en;
+    }
+    const c = active[0];
+    const done = c.contributions.length;
+    const pct = Math.round((done / c.targetDays) * 100);
+    const r: Record<Language, string> = {
+      en: `${c.emoji} "${c.name}": ${done}/${c.targetDays} days (${pct}%) — keep going! 🔥`,
+      sw: `${c.emoji} "${c.name}": siku ${done}/${c.targetDays} (${pct}%) — endelea! 🔥`,
+      fr: `${c.emoji} "${c.name}": ${done}/${c.targetDays} jours (${pct}%) — continuez! 🔥`,
+      ar: `${c.emoji} "${c.name}": ${done}/${c.targetDays} يوماً (${pct}%) — استمر! 🔥`,
+      pt: `${c.emoji} "${c.name}": ${done}/${c.targetDays} dias (${pct}%) — continue! 🔥`,
+    };
+    return r[lang] || r.en;
+  }
+
+  // Forecast
+  if (matches(['forecast', 'project', 'predict', 'utabiri', 'prévision', 'توقع', 'previsão', 'end of month', 'month end'])) {
+    const day = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dailyRate = day > 0 ? thisMonthExp / day : 0;
+    const projExp = Math.round(dailyRate * daysInMonth);
+    const projInc = thisMonthInc > 0 ? Math.round((thisMonthInc / day) * daysInMonth) : 0;
+    const r: Record<Language, string> = {
+      en: `📈 Month forecast: ~${fmt(projExp)} spending, ~${fmt(projInc)} income. Net: ~${fmt(projInc - projExp)}.`,
+      sw: `📈 Utabiri wa mwezi: ~${fmt(projExp)} matumizi, ~${fmt(projInc)} mapato. Jumla: ~${fmt(projInc - projExp)}.`,
+      fr: `📈 Prévision: ~${fmt(projExp)} dépenses, ~${fmt(projInc)} revenus. Net: ~${fmt(projInc - projExp)}.`,
+      ar: `📈 التوقع: ~${fmt(projExp)} إنفاق، ~${fmt(projInc)} دخل. الصافي: ~${fmt(projInc - projExp)}.`,
+      pt: `📈 Previsão: ~${fmt(projExp)} gastos, ~${fmt(projInc)} renda. Líquido: ~${fmt(projInc - projExp)}.`,
+    };
+    return r[lang] || r.en;
+  }
+
+  // Food category deep-dive
+  if (matches(kw.food)) {
+    const foodAmt = Object.entries(byCategory).find(([k]) => /food|chakula|nourriture/i.test(k))?.[1] || 0;
+    const r: Record<Language, string> = {
+      en: foodAmt > 0 ? `🍽️ Food: ${fmt(foodAmt)}. Buy at local markets, cook in bulk, skip impulse snacks — save 20-30%!` : '🍽️ No food expenses yet — start tracking!',
+      sw: foodAmt > 0 ? `🍽️ Chakula: ${fmt(foodAmt)}. Nunua sokoni, pika wingi — unaokoa 20-30%!` : '🍽️ Bado haujafanya matumizi ya chakula.',
+      fr: foodAmt > 0 ? `🍽️ Alimentation: ${fmt(foodAmt)}. Marché local + cuisine en quantité = -20-30%!` : '🍽️ Aucune dépense alimentaire.',
+      ar: foodAmt > 0 ? `🍽️ الغذاء: ${fmt(foodAmt)}. الأسواق المحلية والطبخ بكميات كبيرة توفر 20-30%!` : '🍽️ لا إنفاق على الغذاء بعد.',
+      pt: foodAmt > 0 ? `🍽️ Alimentação: ${fmt(foodAmt)}. Mercado local e cozinhar em quantidade poupam 20-30%!` : '🍽️ Nenhum gasto alimentar registrado.',
+    };
+    return r[lang] || r.en;
+  }
+
+  // Transport deep-dive
+  if (matches(kw.transport)) {
+    const transAmt = Object.entries(byCategory).find(([k]) => /transport|usafiri/i.test(k))?.[1] || 0;
+    const r: Record<Language, string> = {
+      en: transAmt > 0 ? `🚌 Transport: ${fmt(transAmt)}. Daladala/matatu saves up to 60% vs taxi!` : '🚌 No transport expenses yet.',
+      sw: transAmt > 0 ? `🚌 Usafiri: ${fmt(transAmt)}. Daladala ni nafuu zaidi — unaokoa hadi 60%!` : '🚌 Hakuna matumizi ya usafiri.',
+      fr: transAmt > 0 ? `🚌 Transport: ${fmt(transAmt)}. Transports communs = -60% vs taxi!` : '🚌 Aucune dépense transport.',
+      ar: transAmt > 0 ? `🚌 المواصلات: ${fmt(transAmt)}. النقل العام أوفر بـ 60%!` : '🚌 لا نفقات مواصلات.',
+      pt: transAmt > 0 ? `🚌 Transporte: ${fmt(transAmt)}. Transporte público poupa até 60%!` : '🚌 Nenhum gasto de transporte.',
+    };
+    return r[lang] || r.en;
+  }
+
+  // First-time user nudge
+  if (state.transactions.length === 0) {
+    const r: Record<Language, string> = {
+      en: `Hi${state.userName ? ` ${state.userName}` : ''}! 👋 Log your first transaction to get started. I'll give smarter advice the more data I have!`,
+      sw: `Habari${state.userName ? ` ${state.userName}` : ''}! 👋 Rekodi muamala wako wa kwanza. Ushauri wangu utakuwa bora zaidi unavyorekodi!`,
+      fr: `Bonjour${state.userName ? ` ${state.userName}` : ''}! 👋 Enregistrez votre première transaction — mes conseils s'améliorent avec les données!`,
+      ar: `مرحباً${state.userName ? ` ${state.userName}` : ''}! 👋 سجّل أول معاملة. نصائحي ستتحسن مع المزيد من البيانات!`,
+      pt: `Olá${state.userName ? ` ${state.userName}` : ''}! 👋 Registre sua primeira transação para começar!`,
+    };
+    return r[lang] || r.en;
+  }
+
   // Specific category lookup
   for (const [cat, amt] of topCat) {
     if (lower.includes(cat.toLowerCase())) {
@@ -594,11 +752,11 @@ export function AIAssistant() {
   const abortRef = useRef<AbortController | null>(null);
 
   const QUICK_QUESTIONS: Record<Language, string[]> = {
-    en: ["Where did my money go?", "Am I on budget?", "What did I spend today?", "How's my goal?"],
-    sw: ['Pesa zangu ziko wapi?', 'Bajeti yangu iko sawa?', 'Leo nimetumia kiasi gani?', 'Lengo langu liko wapi?'],
-    fr: ['Où est allé mon argent?', 'Mon budget est-il respecté?', "Qu'ai-je dépensé aujourd'hui?", 'Comment va mon objectif?'],
-    ar: ['أين ذهب مالي؟', 'هل ميزانيتي على المسار الصحيح؟', 'ماذا أنفقت اليوم؟', 'كيف هدفي؟'],
-    pt: ['Para onde foi meu dinheiro?', 'Estou dentro do orçamento?', 'O que gastei hoje?', 'Como está minha meta?'],
+    en: ["Where did my money go?", "Am I on budget?", "50/30/20 rule", "Emergency fund?", "Month forecast"],
+    sw: ['Pesa zangu ziko wapi?', 'Bajeti yangu iko sawa?', 'Kanuni 50/30/20', 'Akiba ya dharura?', 'Utabiri wa mwezi'],
+    fr: ['Où est allé mon argent?', 'Mon budget respecté?', 'Règle 50/30/20', "Fonds d'urgence?", 'Prévision du mois'],
+    ar: ['أين ذهب مالي؟', 'هل ميزانيتي على المسار؟', 'مبدأ 50/30/20', 'صندوق طوارئ؟', 'توقع الشهر'],
+    pt: ['Para onde foi meu dinheiro?', 'Estou no orçamento?', 'Regra 50/30/20', 'Fundo de emergência?', 'Previsão do mês'],
   };
 
   const initMessages = (): Message[] => {

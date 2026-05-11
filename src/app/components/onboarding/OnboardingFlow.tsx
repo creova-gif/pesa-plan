@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Check } from 'lucide-react';
-import { animate, stagger } from 'animejs';
+import { animate } from 'animejs';
 import { useApp, type Language, type UserType, type IncomeFrequency } from '@/app/App';
 import { REGION_CONFIG, LANGUAGE_REGIONS, getRegionName, type Region } from '@/app/utils/currency';
 
@@ -37,36 +37,46 @@ const cardBase = 'relative overflow-hidden rounded-2xl text-left transition-all 
 const cardIdle = 'bg-white border border-[#F4F4F2]';
 const cardOn   = 'bg-white border-2 border-[#FD8240]';
 
-// ── Confetti burst (animejs) ───────────────────────────────────────────────
+// ── Confetti burst (animejs v4 compatible) ────────────────────────────────
 function spawnConfetti(container: HTMLElement) {
-  const colors = ['#FD8240', '#4E886F', '#5CC7A0', '#FFD166', '#EF476F', '#fff'];
-  const count = 60;
-  const particles: HTMLElement[] = [];
+  const colors = ['#FD8240', '#4E886F', '#5CC7A0', '#FFD166', '#EF476F', '#ffffff', '#A78BFA'];
+  const count = 72;
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
-    const size = 6 + Math.random() * 8;
-    el.style.cssText = `
-      position:absolute; width:${size}px; height:${size}px;
-      background:${colors[i % colors.length]};
-      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
-      left:50%; top:50%; pointer-events:none; opacity:1; z-index:999;
-    `;
+    const size = 5 + Math.random() * 9;
+    const tx = (Math.random() - 0.5) * 400;
+    const ty = -60 - Math.random() * 300;
+    const rot = (Math.random() - 0.5) * 800;
+    const dur = 800 + Math.random() * 600;
+    const delay = i * 10;
+    el.style.cssText = [
+      'position:absolute',
+      `width:${size}px`,
+      `height:${size}px`,
+      `background:${colors[i % colors.length]}`,
+      `border-radius:${Math.random() > 0.45 ? '50%' : '3px'}`,
+      'left:50%',
+      'top:40%',
+      'pointer-events:none',
+      'opacity:1',
+      'z-index:9999',
+      'will-change:transform',
+    ].join(';');
     container.appendChild(el);
-    particles.push(el);
+    // animejs v4: animate each element individually — fully supported
+    animate(el, {
+      translateX: tx,
+      translateY: ty,
+      scale: [{ to: 1.2, duration: 80 }, { to: 0.05, duration: dur - 80 }],
+      opacity: [{ to: 1, duration: 100 }, { to: 0, duration: dur - 100 }],
+      rotate: rot,
+      duration: dur,
+      delay,
+      ease: 'easeOutExpo',
+      onComplete: () => el.remove(),
+    });
   }
-
-  animate(particles, {
-    translateX: () => (Math.random() - 0.5) * 380,
-    translateY: () => -80 - Math.random() * 280,
-    scale: [1, 0.1],
-    opacity: [1, 0],
-    rotate: () => (Math.random() - 0.5) * 720,
-    duration: 900 + Math.random() * 500,
-    easing: 'easeOutExpo',
-    delay: stagger(12),
-    onComplete: () => particles.forEach(p => p.remove()),
-  });
 }
 
 // ── Animated chart SVG for hero ────────────────────────────────────────────
@@ -87,18 +97,26 @@ function HeroChart() {
       });
     }
     if (counterRef.current) {
-      const target = { val: 0 };
-      animate(target, {
-        val: 1247500,
-        duration: 1600,
-        delay: 500,
-        easing: 'easeOutExpo',
-        onUpdate: () => {
-          if (counterRef.current) {
-            counterRef.current.textContent = Math.round(target.val).toLocaleString();
-          }
-        },
-      });
+      // animejs v4: animate a DOM element's CSS custom property for the counter
+      // Use RAF-based counter instead of animating plain objects (v4 API change)
+      const TARGET = 1247500;
+      const DURATION = 1600;
+      const DELAY = 500;
+      let start: number | null = null;
+      let rafId: number;
+      const tick = (ts: number) => {
+        if (!start) start = ts;
+        const elapsed = ts - start;
+        if (elapsed < DELAY) { rafId = requestAnimationFrame(tick); return; }
+        const progress = Math.min((elapsed - DELAY) / DURATION, 1);
+        // easeOutExpo curve
+        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const val = Math.round(eased * TARGET);
+        if (counterRef.current) counterRef.current.textContent = val.toLocaleString();
+        if (progress < 1) rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafId);
     }
   }, []);
 
