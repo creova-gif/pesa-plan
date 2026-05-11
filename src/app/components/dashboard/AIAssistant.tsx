@@ -253,9 +253,9 @@ function generateReply(
     const warn = REGION_CONFIG[state.region].dailyWarnThreshold;
     const high = todayExp > warn;
     const r: Record<Language, string> = {
-      en: `Today you spent ${fmt(todayExp)}. ${high ? 'That's quite high — watch your spending! ⚠️' : "You're doing well today. ✅"}`,
+      en: `Today you spent ${fmt(todayExp)}. ${high ? "That's quite high — watch your spending! ⚠️" : "You're doing well today. ✅"}`,
       sw: `Leo umetumia ${fmt(todayExp)}. ${high ? 'Hiyo ni nyingi sana — angalia matumizi yako! ⚠️' : 'Uko vizuri leo. ✅'}`,
-      fr: `Aujourd'hui vous avez dépensé ${fmt(todayExp)}. ${high ? 'C\'est assez élevé — surveillez vos dépenses! ⚠️' : 'Vous vous en sortez bien aujourd\'hui. ✅'}`,
+      fr: `Aujourd'hui vous avez dépensé ${fmt(todayExp)}. ${high ? "C'est assez élevé — surveillez vos dépenses! ⚠️" : "Vous vous en sortez bien aujourd'hui. ✅"}`,
       ar: `أنفقت اليوم ${fmt(todayExp)}. ${high ? 'هذا مرتفع جداً — راقب إنفاقك! ⚠️' : 'أداؤك جيد اليوم. ✅'}`,
       pt: `Hoje você gastou ${fmt(todayExp)}. ${high ? 'Isso é bastante alto — cuidado com os gastos! ⚠️' : 'Você está indo bem hoje. ✅'}`,
     };
