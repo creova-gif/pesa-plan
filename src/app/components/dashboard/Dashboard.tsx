@@ -14,6 +14,7 @@ import { useApp } from '@/app/App';
 import { t } from '@/app/utils/translations';
 import { formatCurrency, REGION_CONFIG } from '@/app/utils/currency';
 import { getCategoryIcon } from '@/app/utils/categoryIcons';
+import { BrandIcon } from '@/app/utils/brandLogos';
 import { AddTransactionDialog } from './AddTransactionDialog';
 import { GoalsView } from './GoalsView';
 import { HistoryView } from './HistoryView';
@@ -463,55 +464,102 @@ function HomeTab({
       {/* Insight of the day */}
       <InsightOfDay />
 
-      {/* Balance card */}
-      <MkCard>
-        <div style={{ padding: 20 }}>
-          <p style={{ fontSize: 14, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
-            {lang === 'sw' ? 'Jumla ya Akaunti' : 'Wallet Balance'}
-          </p>
-          <p style={{ fontSize: 32, fontWeight: 400, color: '#4D4845', margin: '4px 0 16px', fontFamily: 'Geist, sans-serif' }}>
-            {fmt(animBalance)}
-          </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Pill label={lang === 'sw' ? 'Ingiza' : 'Fund'} onClick={onAddIncome} />
-            <Pill label={lang === 'sw' ? 'Tuma' : 'Send'} onClick={onAddExpense} />
-            <Pill label={lang === 'sw' ? 'Maarifa' : lang === 'fr' ? 'Insights' : lang === 'ar' ? 'رؤى' : lang === 'pt' ? 'Insights' : 'Insights'} onClick={onInsights} />
+      {/* Balance card — premium dark hero */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, type: 'spring', stiffness: 300, damping: 28 }}
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 24,
+          background: 'linear-gradient(145deg, #0F2419 0%, #1A3D2E 45%, #245E42 100%)',
+          padding: '22px 22px 20px',
+          boxShadow: '0 12px 40px rgba(15,36,25,0.4)',
+        }}
+      >
+        {/* Radial glow top-right */}
+        <div style={{
+          position: 'absolute', top: -40, right: -40, width: 180, height: 180,
+          background: 'radial-gradient(circle, rgba(92,199,160,0.18) 0%, transparent 65%)',
+          pointerEvents: 'none',
+        }} />
+        {/* Dot-grid texture */}
+        <div style={{
+          position: 'absolute', inset: 0, opacity: 0.04,
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
+          backgroundSize: '18px 18px', pointerEvents: 'none',
+        }} />
+
+        {/* Label + balance */}
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontFamily: 'Geist, sans-serif', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+          {lang === 'sw' ? 'Jumla ya Akaunti' : lang === 'fr' ? 'Solde total' : lang === 'ar' ? 'الرصيد الإجمالي' : lang === 'pt' ? 'Saldo total' : 'Total Balance'}
+        </p>
+        <p style={{ fontSize: 36, fontWeight: 800, color: '#fff', fontFamily: 'Geist, sans-serif', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 18 }}>
+          {fmt(animBalance)}
+        </p>
+
+        {/* Today row */}
+        <div style={{ display: 'flex', gap: 16, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 22, height: 22, borderRadius: 7, background: 'rgba(92,199,160,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TrendingUp size={12} color="#5CC7A0" />
+            </div>
+            <div>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', fontFamily: 'Geist, sans-serif', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                {lang === 'sw' ? 'Mapato leo' : "Today's in"}
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#5CC7A0', fontFamily: 'Geist, sans-serif' }}>+{fmt(todayIncome)}</p>
+            </div>
+          </div>
+          <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 22, height: 22, borderRadius: 7, background: 'rgba(249,99,71,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <TrendingDown size={12} color="#F96347" />
+            </div>
+            <div>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', fontFamily: 'Geist, sans-serif', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                {lang === 'sw' ? 'Matumizi leo' : "Today's out"}
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#F96347', fontFamily: 'Geist, sans-serif' }}>-{fmt(todayExpense)}</p>
+            </div>
           </div>
         </div>
-      </MkCard>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { label: lang === 'sw' ? 'Ingiza' : lang === 'fr' ? 'Ajouter' : lang === 'ar' ? 'أضف' : lang === 'pt' ? 'Adicionar' : 'Fund', fn: onAddIncome },
+            { label: lang === 'sw' ? 'Tuma' : lang === 'fr' ? 'Envoyer' : lang === 'ar' ? 'أرسل' : lang === 'pt' ? 'Enviar' : 'Send', fn: onAddExpense },
+            { label: lang === 'sw' ? 'Maarifa' : lang === 'fr' ? 'Insights' : lang === 'ar' ? 'رؤى' : lang === 'pt' ? 'Insights' : 'Insights', fn: onInsights },
+          ].map(({ label, fn }) => (
+            <motion.button
+              key={label}
+              onClick={fn}
+              whileTap={{ scale: 0.92 }}
+              style={{
+                flex: 1,
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                borderRadius: 12,
+                padding: '9px 4px',
+                fontSize: 12,
+                fontWeight: 600,
+                color: '#fff',
+                cursor: 'pointer',
+                fontFamily: 'Geist, sans-serif',
+                backdropFilter: 'blur(4px)',
+                transition: 'background 0.15s',
+              }}
+            >
+              {label}
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Net worth breakdown */}
       <NetWorthCard />
-
-      {/* Today stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <MkCard>
-          <div style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <TrendingUp size={14} color="#215B44" />
-              <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
-                {lang === 'sw' ? 'Leo Mapato' : "Today's Income"}
-              </p>
-            </div>
-            <p style={{ fontSize: 18, fontWeight: 500, color: '#215B44', fontFamily: 'Geist, sans-serif' }}>
-              {fmt(todayIncome)}
-            </p>
-          </div>
-        </MkCard>
-        <MkCard>
-          <div style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <TrendingDown size={14} color="#C9362B" />
-              <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
-                {lang === 'sw' ? 'Leo Matumizi' : "Today's Spend"}
-              </p>
-            </div>
-            <p style={{ fontSize: 18, fontWeight: 500, color: '#C9362B', fontFamily: 'Geist, sans-serif' }}>
-              {fmt(todayExpense)}
-            </p>
-          </div>
-        </MkCard>
-      </div>
 
       {/* Cashflow forecast */}
       <CashflowForecast />
@@ -608,22 +656,29 @@ function HomeTab({
                   onClick={() => onTxSelect(tx)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', minWidth: 0 }}
                 >
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    border: '1px solid #F4F4F2',
-                    background: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 18,
-                    flexShrink: 0,
-                  }}
-                >
-                  {getCategoryIcon(tx.category)}
-                </div>
+                <BrandIcon
+                  category={tx.category}
+                  notes={tx.notes}
+                  size={40}
+                  fallback={
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        border: '1px solid #F4F4F2',
+                        background: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 18,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {getCategoryIcon(tx.category)}
+                    </div>
+                  }
+                />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: '#4D4845', fontFamily: 'Geist, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {tx.category}

@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Check } from 'lucide-react';
+import { animate, stagger } from 'animejs';
 import { useApp, type Language, type UserType, type IncomeFrequency } from '@/app/App';
 import { REGION_CONFIG, LANGUAGE_REGIONS, getRegionName, type Region } from '@/app/utils/currency';
 
@@ -36,172 +37,325 @@ const cardBase = 'relative overflow-hidden rounded-2xl text-left transition-all 
 const cardIdle = 'bg-white border border-[#F4F4F2]';
 const cardOn   = 'bg-white border-2 border-[#FD8240]';
 
-// ── App icon ───────────────────────────────────────────────────────────────
-function AppIcon() {
+// ── Confetti burst (animejs) ───────────────────────────────────────────────
+function spawnConfetti(container: HTMLElement) {
+  const colors = ['#FD8240', '#4E886F', '#5CC7A0', '#FFD166', '#EF476F', '#fff'];
+  const count = 60;
+  const particles: HTMLElement[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    const size = 6 + Math.random() * 8;
+    el.style.cssText = `
+      position:absolute; width:${size}px; height:${size}px;
+      background:${colors[i % colors.length]};
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+      left:50%; top:50%; pointer-events:none; opacity:1; z-index:999;
+    `;
+    container.appendChild(el);
+    particles.push(el);
+  }
+
+  animate(particles, {
+    translateX: () => (Math.random() - 0.5) * 380,
+    translateY: () => -80 - Math.random() * 280,
+    scale: [1, 0.1],
+    opacity: [1, 0],
+    rotate: () => (Math.random() - 0.5) * 720,
+    duration: 900 + Math.random() * 500,
+    easing: 'easeOutExpo',
+    delay: stagger(12),
+    onComplete: () => particles.forEach(p => p.remove()),
+  });
+}
+
+// ── Animated chart SVG for hero ────────────────────────────────────────────
+function HeroChart() {
+  const pathRef = useRef<SVGPathElement>(null);
+  const counterRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (pathRef.current) {
+      const length = pathRef.current.getTotalLength();
+      pathRef.current.style.strokeDasharray = `${length}`;
+      pathRef.current.style.strokeDashoffset = `${length}`;
+      animate(pathRef.current, {
+        strokeDashoffset: [length, 0],
+        duration: 1400,
+        easing: 'easeInOutCubic',
+        delay: 400,
+      });
+    }
+    if (counterRef.current) {
+      const target = { val: 0 };
+      animate(target, {
+        val: 1247500,
+        duration: 1600,
+        delay: 500,
+        easing: 'easeOutExpo',
+        onUpdate: () => {
+          if (counterRef.current) {
+            counterRef.current.textContent = Math.round(target.val).toLocaleString();
+          }
+        },
+      });
+    }
+  }, []);
+
   return (
-    <div
-      style={{
-        width: 80,
-        height: 80,
-        borderRadius: 24,
-        background: '#4E886F',
-        boxShadow: '0 20px 50px rgba(78,136,111,0.35)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-        <path d="M20 8C13.373 8 8 13.373 8 20s5.373 12 12 12 12-5.373 12-12S26.627 8 20 8z" stroke="white" strokeWidth="2.2" />
-        <path d="M20 14v6l4 2" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M15 28h10" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" />
-        <path d="M20 28v4" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" />
+    <div style={{ position: 'relative', width: '100%', height: 160 }}>
+      {/* Balance counter */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        style={{ textAlign: 'center', marginBottom: 8 }}
+      >
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'Geist, sans-serif', marginBottom: 2 }}>
+          Total Balance
+        </p>
+        <p style={{ fontSize: 32, fontWeight: 800, color: '#fff', fontFamily: 'Geist, sans-serif', letterSpacing: '-0.02em' }}>
+          TZS <span ref={counterRef}>0</span>
+        </p>
+      </motion.div>
+
+      {/* Chart line */}
+      <svg viewBox="0 0 300 80" width="100%" height="80" style={{ overflow: 'visible' }}>
+        {/* Grid lines */}
+        {[20, 40, 60].map(y => (
+          <line key={y} x1="0" y1={y} x2="300" y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+        ))}
+        {/* Gradient fill */}
+        <defs>
+          <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5CC7A0" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#5CC7A0" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M0,70 C30,65 50,60 80,50 C110,40 120,55 150,38 C180,22 200,35 230,20 C260,8 280,12 300,5 L300,80 L0,80 Z"
+          fill="url(#chartFill)"
+        />
+        {/* Chart line itself */}
+        <path
+          ref={pathRef}
+          d="M0,70 C30,65 50,60 80,50 C110,40 120,55 150,38 C180,22 200,35 230,20 C260,8 280,12 300,5"
+          fill="none"
+          stroke="#5CC7A0"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        {/* End dot */}
+        <motion.circle
+          cx="300" cy="5" r="5" fill="#5CC7A0"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 1.8, type: 'spring', stiffness: 400 }}
+        />
+        <motion.circle
+          cx="300" cy="5" r="9" fill="none" stroke="#5CC7A0" strokeWidth="1.5"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: [0, 1.4, 1], opacity: [0, 0.5, 0] }}
+          transition={{ delay: 1.9, duration: 0.8, repeat: Infinity, repeatDelay: 2 }}
+        />
       </svg>
     </div>
   );
 }
 
-// ── Step 0: Welcome ────────────────────────────────────────────────────────
+// ── Floating particle for hero bg ──────────────────────────────────────────
+function FloatingParticle({ x, y, delay, size }: { x: number; y: number; delay: number; size: number }) {
+  return (
+    <motion.div
+      style={{
+        position: 'absolute', left: `${x}%`, top: `${y}%`,
+        width: size, height: size, borderRadius: '50%',
+        background: 'rgba(92,199,160,0.25)',
+        pointerEvents: 'none',
+      }}
+      animate={{ y: [0, -18, 0], opacity: [0.3, 0.7, 0.3] }}
+      transition={{ duration: 3 + delay, repeat: Infinity, delay, ease: 'easeInOut' }}
+    />
+  );
+}
+
+// ── Step 0: Welcome (cinematic) ────────────────────────────────────────────
 function WelcomeStep({ onNext, lang }: { onNext: () => void; lang: Language }) {
-  const features = [
-    {
-      icon: '📲',
-      en: 'M-Pesa · Airtel · Tigo',    subEn: 'All mobile money supported',
-      sw: 'M-Pesa · Airtel · Tigo',    subSw: 'Pesa za simu zote',
-    },
-    {
-      icon: '📊',
-      en: 'AI budgeting',              subEn: 'Smart spending insights',
-      sw: 'Bajeti ya AI',              subSw: 'Akili bandia inakusaidia',
-    },
-    {
-      icon: '🔒',
-      en: '100% private',              subEn: 'Data stays on your device',
-      sw: 'Faragha kamili',            subSw: 'Data kwenye simu yako tu',
-    },
+  const confettiRef = useRef<HTMLDivElement>(null);
+
+  const handleStart = useCallback(() => {
+    if (confettiRef.current) spawnConfetti(confettiRef.current);
+    setTimeout(onNext, 280);
+  }, [onNext]);
+
+  const taglines: Record<string, string> = {
+    en: 'Control your money, without fear',
+    sw: 'Dhibiti pesa zako, usiogope',
+    fr: 'Contrôlez votre argent, sans crainte',
+    ar: 'تحكم في أموالك، بلا خوف',
+    pt: 'Controle seu dinheiro, sem medo',
+  };
+
+  const cta: Record<string, string> = {
+    en: 'Get Started',
+    sw: 'Anza Sasa',
+    fr: 'Commencer',
+    ar: 'ابدأ الآن',
+    pt: 'Começar',
+  };
+
+  const footer: Record<string, string> = {
+    en: 'Free · No ads · Works offline',
+    sw: 'Bila malipo · Bila matangazo · Bila mtandao',
+    fr: 'Gratuit · Sans pub · Hors ligne',
+    ar: 'مجاني · بدون إعلانات · يعمل دون إنترنت',
+    pt: 'Grátis · Sem anúncios · Funciona offline',
+  };
+
+  const pills = [
+    { icon: '📲', en: 'M-Pesa · Airtel', sw: 'M-Pesa · Airtel', fr: 'M-Pesa · Airtel', ar: 'M-Pesa · Airtel', pt: 'M-Pesa · Airtel' },
+    { icon: '✨', en: 'AI Coach', sw: 'AI Coach', fr: 'Coach IA', ar: 'مدرب AI', pt: 'Coach IA' },
+    { icon: '🔒', en: '100% Private', sw: 'Faragha', fr: 'Privé', ar: 'خاص ١٠٠٪', pt: 'Privado' },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '64px 24px 40px' }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div ref={confettiRef} style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', overflow: 'hidden' }}>
+      {/* ── Hero (top 55%) — dark green ── */}
+      <div style={{
+        position: 'relative',
+        background: 'linear-gradient(160deg, #0F2419 0%, #1A3D2E 40%, #245E42 100%)',
+        padding: '48px 28px 32px',
+        flexShrink: 0,
+        overflow: 'hidden',
+        minHeight: '55vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+      }}>
+        {/* Floating particles */}
+        {[
+          { x: 8, y: 15, d: 0, s: 6 }, { x: 85, y: 10, d: 0.5, s: 10 },
+          { x: 60, y: 30, d: 1.2, s: 5 }, { x: 20, y: 60, d: 0.8, s: 8 },
+          { x: 75, y: 55, d: 1.8, s: 4 }, { x: 45, y: 8, d: 2.1, s: 7 },
+        ].map((p, i) => <FloatingParticle key={i} x={p.x} y={p.y} delay={p.d} size={p.s} />)}
+
+        {/* Radial glow top-right */}
+        <div style={{
+          position: 'absolute', top: -60, right: -60, width: 220, height: 220,
+          background: 'radial-gradient(circle, rgba(92,199,160,0.18) 0%, transparent 65%)',
+          pointerEvents: 'none',
+        }} />
+
+        {/* App name top */}
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.05 }}
-          style={{ marginBottom: 24 }}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          style={{ position: 'absolute', top: 20, left: 28, display: 'flex', alignItems: 'center', gap: 10 }}
         >
-          <AppIcon />
+          <div style={{
+            width: 32, height: 32, borderRadius: 10,
+            background: 'linear-gradient(135deg, #4E886F, #245E42)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(78,136,111,0.4)',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 26 26" fill="none">
+              <path d="M13 2 L14.6 10.4 L23 12 L14.6 13.6 L13 22 L11.4 13.6 L3 12 L11.4 10.4 Z" fill="white" fillOpacity="0.95" />
+            </svg>
+          </div>
+          <span style={{ fontWeight: 700, fontSize: 16, color: '#fff', fontFamily: 'Geist, sans-serif', letterSpacing: '-0.01em' }}>Maokoto</span>
         </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{
-            fontSize: 40,
-            fontWeight: 700,
-            color: '#4D4845',
-            fontFamily: 'Geist, sans-serif',
-            textAlign: 'center',
-            marginBottom: 8,
-            letterSpacing: '-0.02em',
-          }}
-        >
-          Maokoto
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          style={{
-            color: '#928F8B',
-            fontSize: 15,
-            textAlign: 'center',
-            marginBottom: 36,
-            fontFamily: 'Geist, sans-serif',
-            maxWidth: 240,
-            lineHeight: 1.5,
-          }}
-        >
-          {lang === 'sw' ? 'Dhibiti pesa zako, usiogope' : 'Control your money, without fear'}
-        </motion.p>
-
-        <div style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {features.map((f, i) => (
-            <motion.div
-              key={f.en}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 + i * 0.1, type: 'spring', stiffness: 300, damping: 26 }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 16px',
-                borderRadius: 14,
-                background: '#F6F6F4',
-                border: '1px solid #F4F4F2',
-              }}
-            >
-              <span style={{ fontSize: 20, flexShrink: 0 }}>{f.icon}</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 500, color: '#4D4845', fontFamily: 'Geist, sans-serif' }}>
-                  {lang === 'sw' ? f.sw : f.en}
-                </p>
-                <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif', marginTop: 2 }}>
-                  {lang === 'sw' ? f.subSw : f.subEn}
-                </p>
-              </div>
-              <div
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  background: 'rgba(78,136,111,0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Check style={{ width: 12, height: 12, color: '#4E886F' }} strokeWidth={2.5} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* Chart + Counter */}
+        <HeroChart />
       </div>
 
-      <div style={{ width: '100%', maxWidth: 340, margin: '32px auto 0' }}>
-        <motion.button
-          onClick={onNext}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            width: '100%',
-            background: '#FD8240',
-            color: '#fff',
-            borderRadius: 999,
-            padding: '16px 0',
-            fontWeight: 600,
-            fontSize: 16,
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'Geist, sans-serif',
-          }}
-        >
-          {lang === 'sw' ? 'Anza Sasa' : 'Get Started'}
-        </motion.button>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-          style={{ color: '#928F8B', textAlign: 'center', fontSize: 12, marginTop: 12, fontFamily: 'Geist, sans-serif' }}
-        >
-          {lang === 'sw' ? 'Bila malipo · Bila matangazo · Bila mtandao' : 'Free · No ads · Works offline'}
-        </motion.p>
+      {/* ── Bottom white panel ── */}
+      <div style={{
+        flex: 1,
+        background: '#fff',
+        padding: '28px 28px 32px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        borderRadius: '28px 28px 0 0',
+        marginTop: -20,
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
+      }}>
+        <div>
+          <motion.h1
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, type: 'spring', stiffness: 280, damping: 28 }}
+            style={{
+              fontSize: 30,
+              fontWeight: 800,
+              color: '#1A1F1C',
+              fontFamily: 'Geist, sans-serif',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.15,
+              marginBottom: 10,
+            }}
+          >
+            {taglines[lang] || taglines.en}
+          </motion.h1>
+
+          {/* Pill badges */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+            {pills.map((p, i) => (
+              <motion.span
+                key={p.en}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.35 + i * 0.08, type: 'spring', stiffness: 400 }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  background: '#EAF6F1', border: '1px solid rgba(78,136,111,0.2)',
+                  borderRadius: 999, padding: '5px 12px',
+                  fontSize: 12, fontWeight: 600, color: '#2D6A4F',
+                  fontFamily: 'Geist, sans-serif',
+                }}
+              >
+                <span>{p.icon}</span>
+                <span>{p[lang as keyof typeof p] || p.en}</span>
+              </motion.span>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 20 }}>
+          <motion.button
+            onClick={handleStart}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            whileTap={{ scale: 0.96 }}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #FD8240 0%, #F55D3E 100%)',
+              color: '#fff',
+              borderRadius: 999,
+              padding: '17px 0',
+              fontWeight: 700,
+              fontSize: 16,
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'Geist, sans-serif',
+              boxShadow: '0 8px 28px rgba(253,130,64,0.42)',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {cta[lang] || cta.en}
+          </motion.button>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            style={{ color: '#B0ADA9', textAlign: 'center', fontSize: 12, marginTop: 12, fontFamily: 'Geist, sans-serif' }}
+          >
+            {footer[lang] || footer.en}
+          </motion.p>
+        </div>
       </div>
     </div>
   );

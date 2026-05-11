@@ -4,6 +4,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Filter, X, Trash2, Search, Chevron
 import { useApp, type PaymentSource, type Transaction } from '@/app/App';
 import { t } from '@/app/utils/translations';
 import { getCategoryIcon } from '@/app/utils/categoryIcons';
+import { getBrandEntry } from '@/app/utils/brandLogos';
 import { format } from 'date-fns';
 import { formatCurrency as fmtCurrency } from '@/app/utils/currency';
 
@@ -348,11 +349,25 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 ${
-                              transaction.type === 'income' ? 'bg-emerald-50' : 'bg-red-50'
-                            }`}>
-                              <span>{getCategoryIcon(transaction.category)}</span>
-                            </div>
+                            {(() => {
+                              const brand = getBrandEntry(transaction.category, transaction.notes);
+                              if (brand) {
+                                const Icon = brand.component;
+                                return (
+                                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                                    style={{ background: brand.bg }}>
+                                    <Icon width={22} height={22} />
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 ${
+                                  transaction.type === 'income' ? 'bg-emerald-50' : 'bg-red-50'
+                                }`}>
+                                  <span>{getCategoryIcon(transaction.category)}</span>
+                                </div>
+                              );
+                            })()}
                             <div className="min-w-0">
                               <p className="font-semibold text-gray-900 text-sm truncate">{transaction.category}</p>
                               <p className="text-xs text-gray-400">
