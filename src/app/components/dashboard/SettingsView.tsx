@@ -10,6 +10,8 @@ import { t } from '@/app/utils/translations';
 import { REGION_CONFIG } from '@/app/utils/currency';
 import { LegalView } from './LegalView';
 import { AppLockSetup } from './AppLock';
+import { EmergencyModeToggle } from './EmergencyModeToggle';
+import { TrustSignals } from './TrustSignals';
 import { Analytics } from '@/app/utils/analytics';
 
 interface SettingsViewProps {
@@ -626,6 +628,12 @@ export function SettingsView({ onBack }: SettingsViewProps) {
             </motion.button>
           </div>
         </div>
+
+        {/* Emergency mode toggle */}
+        <EmergencyModeToggle />
+
+        {/* Trust signals */}
+        <TrustSignals />
 
         {/* Try on your phone */}
         <PhoneInstallCard lang={lang} />

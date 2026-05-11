@@ -37,6 +37,7 @@ import { SmartBudgetBuilder } from './SmartBudgetBuilder';
 import { BudgetHealthBars } from './BudgetHealthBars';
 import { LocalBenchmarks } from './LocalBenchmarks';
 import { GrowthShareCard } from './GrowthShareCard';
+import { ExitExperience } from './ExitExperience';
 import type { Transaction } from '@/app/App';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -2002,6 +2003,7 @@ export function Dashboard() {
     >
       <OfflineIndicator />
       <SpendingNudge />
+      <ExitExperience />
 
       {/* Top Nav */}
       <TopNav
