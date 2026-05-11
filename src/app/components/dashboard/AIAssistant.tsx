@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Bot, Sparkles } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 import { useApp } from '@/app/App';
 import { t } from '@/app/utils/translations';
 import { getCategoryIcon } from '@/app/utils/categoryIcons';
@@ -172,6 +172,7 @@ export function AIAssistant() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [showPeek, setShowPeek] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const QUICK_QUESTIONS = lang === 'sw'
@@ -184,6 +185,14 @@ export function AIAssistant() {
       ? `Habari! Mimi ni Msaidizi wako wa Bajeti. 💬\nNiulize chochote kuhusu matumizi yako!`
       : `Hello! I'm your Budget Coach. 💬\nAsk me anything about your spending!`,
   }];
+
+  // Peek tooltip — shows 1.8s after mount, hides after 3s
+  useEffect(() => {
+    if (open) return;
+    const show = setTimeout(() => setShowPeek(true),  1800);
+    const hide = setTimeout(() => setShowPeek(false), 4800);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, [open]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -210,227 +219,318 @@ export function AIAssistant() {
 
   return (
     <>
-      {/* Floating AI button — world-class redesign */}
-      <motion.button
-        onClick={() => { setOpen(true); if (messages.length === 0) setMessages(initMessages()); }}
-        className="fixed bottom-20 right-4 z-40 w-16 h-16"
-        style={{ WebkitTapHighlightColor: 'transparent' }}
-        aria-label="Open AI assistant"
-      >
-        {/* Pulse rings */}
-        {[0, 1, 2].map(i => (
-          <motion.span
-            key={i}
-            className="absolute inset-0 rounded-full"
-            style={{
-              border: `${1.8 - i * 0.4}px solid`,
-              borderColor: i === 0
-                ? 'rgba(52,211,153,0.85)'
-                : i === 1
-                ? 'rgba(20,184,166,0.55)'
-                : 'rgba(16,185,129,0.30)',
-              background: i === 0
-                ? 'radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 65%)'
-                : 'transparent',
-              boxShadow: i === 0 ? '0 0 8px 1px rgba(52,211,153,0.25)' : 'none',
-            }}
-            animate={{
-              scale: [1, 1.95 + i * 0.55],
-              opacity: [0.9 - i * 0.18, 0],
-            }}
-            transition={{
-              duration: 2.6 + i * 0.3,
-              repeat: Infinity,
-              delay: i * 0.72,
-              ease: [0.15, 0.6, 0.25, 0.95],
-            }}
-          />
-        ))}
+      {/* ── Floating AI button ─────────────────────────────────────────── */}
+      <div className="fixed bottom-20 right-4 z-40 flex items-center" style={{ WebkitTapHighlightColor: 'transparent' }}>
 
-        {/* Main disc */}
-        <motion.div
-          className="absolute inset-0 rounded-full flex items-center justify-center"
-          style={{
-            background: 'linear-gradient(145deg, #059669 0%, #0d9488 45%, #065f46 100%)',
-            boxShadow: '0 8px 32px rgba(5,150,105,0.55), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18)',
-          }}
-          animate={{ y: [0, -3, 0] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-          whileTap={{ scale: 0.86 }}
+        {/* Peek tooltip */}
+        <AnimatePresence>
+          {showPeek && !open && (
+            <motion.div
+              key="peek"
+              initial={{ opacity: 0, x: 10, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 10, scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              style={{
+                position: 'absolute',
+                right: 70,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: '#1A3D2E',
+                color: '#fff',
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.01em',
+                padding: '7px 14px',
+                borderRadius: 22,
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 18px rgba(26,61,46,0.45)',
+                pointerEvents: 'none',
+              }}
+            >
+              {lang === 'sw' ? 'Niulize chochote! 💬' : 'Ask me anything! 💬'}
+              <span style={{
+                position: 'absolute',
+                right: -6,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 0, height: 0,
+                borderTop: '5px solid transparent',
+                borderBottom: '5px solid transparent',
+                borderLeft: '7px solid #1A3D2E',
+              }} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Button */}
+        <motion.button
+          onClick={() => { setOpen(true); if (messages.length === 0) setMessages(initMessages()); }}
+          aria-label="Open AI Budget Coach"
+          initial={{ scale: 0, y: 24, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 22, delay: 1 }}
+          whileTap={{ scale: 0.9 }}
+          style={{ position: 'relative', width: 58, height: 58, flexShrink: 0 }}
         >
-          {/* Rotating shimmer ring */}
+          {/* Soft green breathing glow */}
           <motion.span
-            className="absolute inset-0 rounded-full"
             style={{
-              background: 'conic-gradient(from 0deg, transparent 60%, rgba(255,255,255,0.22) 80%, transparent 100%)',
+              position: 'absolute',
+              inset: -8,
+              borderRadius: 26,
+              background: 'radial-gradient(ellipse at center, rgba(26,61,46,0.38) 0%, transparent 68%)',
+              pointerEvents: 'none',
+            }}
+            animate={{ opacity: [0.5, 1, 0.5], scale: [0.92, 1.06, 0.92] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          />
+
+          {/* Slow-rotating shimmer ring */}
+          <motion.span
+            style={{
+              position: 'absolute',
+              inset: -1.5,
+              borderRadius: 21,
+              background: 'conic-gradient(from 0deg, rgba(92,199,160,0.9) 0deg, rgba(26,61,46,0.2) 90deg, rgba(92,199,160,0.0) 180deg, rgba(26,61,46,0.2) 270deg, rgba(92,199,160,0.9) 360deg)',
+              pointerEvents: 'none',
             }}
             animate={{ rotate: [0, 360] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
           />
 
-          {/* Premium AI icon — geometric neural spark */}
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ position: 'relative', zIndex: 1 }}>
-            {/* Outer glow halo */}
-            <circle cx="15" cy="15" r="13.5" stroke="white" strokeOpacity="0.1" strokeWidth="1" />
+          {/* Button body — maokoto green squircle */}
+          <div style={{
+            position: 'absolute',
+            inset: 1.5,
+            borderRadius: 19,
+            background: 'linear-gradient(145deg, #1A3D2E 0%, #245E42 50%, #1A3D2E 100%)',
+            boxShadow: '0 6px 24px rgba(26,61,46,0.55), inset 0 1px 0 rgba(255,255,255,0.1)',
+            overflow: 'hidden',
+          }}>
+            {/* Subtle inner gleam */}
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0,
+              height: '42%',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.09) 0%, transparent 100%)',
+              borderRadius: '19px 19px 0 0',
+              pointerEvents: 'none',
+            }} />
+          </div>
 
-            {/* 4-point star sparkle — main icon */}
-            <path
-              d="M15 4 C15 4 15.9 10.5 18.5 12.5 C21.1 14.5 27 15 27 15 C27 15 21.1 15.5 18.5 17.5 C15.9 19.5 15 26 15 26 C15 26 14.1 19.5 11.5 17.5 C8.9 15.5 3 15 3 15 C3 15 8.9 14.5 11.5 12.5 C14.1 10.5 15 4 15 4Z"
-              fill="white"
-              fillOpacity="0.95"
-            />
+          {/* Center icon — 4-pointed sparkle */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
+            <motion.svg
+              width="26" height="26" viewBox="0 0 26 26" fill="none"
+              animate={{ rotate: [0, 8, -8, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              {/* Large 4-point star */}
+              <path
+                d="M13 2 L14.6 10.4 L23 12 L14.6 13.6 L13 22 L11.4 13.6 L3 12 L11.4 10.4 Z"
+                fill="white"
+                fillOpacity="0.95"
+              />
+              {/* Small accent star top-right */}
+              <path
+                d="M20.5 3.5 L21.2 6.3 L24 7 L21.2 7.7 L20.5 10.5 L19.8 7.7 L17 7 L19.8 6.3 Z"
+                fill="white"
+                fillOpacity="0.5"
+              />
+              {/* Tiny dot bottom-left */}
+              <circle cx="5.5" cy="19.5" r="1.2" fill="white" fillOpacity="0.32" />
+            </motion.svg>
+          </div>
 
-            {/* Secondary small star — top right */}
-            <path
-              d="M22 6 C22 6 22.45 8.6 23.6 9.4 C24.75 10.2 27.2 10.4 27.2 10.4 C27.2 10.4 24.75 10.6 23.6 11.4 C22.45 12.2 22 14.8 22 14.8 C22 14.8 21.55 12.2 20.4 11.4 C19.25 10.6 16.8 10.4 16.8 10.4 C16.8 10.4 19.25 10.2 20.4 9.4 C21.55 8.6 22 6 22 6Z"
-              fill="white"
-              fillOpacity="0.65"
-              transform="scale(0.58) translate(15.5, 2)"
-            />
-
-            {/* Tiny accent dot — bottom left */}
-            <circle cx="8" cy="22" r="1.5" fill="white" fillOpacity="0.5" />
-          </svg>
-
-          {/* Live status dot */}
+          {/* Live green pulse dot — top-right */}
           <motion.span
-            className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full border-2 border-emerald-700"
-            style={{ background: '#86efac' }}
-            animate={{ opacity: [1, 0.4, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            style={{
+              position: 'absolute',
+              top: 6, right: 6,
+              width: 7, height: 7,
+              borderRadius: '50%',
+              background: '#5CC7A0',
+              border: '1.5px solid #1A3D2E',
+              zIndex: 2,
+            }}
+            animate={{ opacity: [1, 0.35, 1], scale: [1, 1.2, 1] }}
+            transition={{ duration: 2.2, repeat: Infinity }}
           />
-        </motion.div>
-      </motion.button>
+        </motion.button>
+      </div>
 
-      {/* Chat sheet */}
+      {/* ── Chat sheet ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {open && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-50"
+              style={{ position: 'fixed', inset: 0, background: 'rgba(12,20,32,0.6)', zIndex: 50, backdropFilter: 'blur(2px)' }}
               onClick={() => setOpen(false)}
             />
+
+            {/* Sheet */}
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 shadow-2xl flex flex-col"
-              style={{ height: '75vh' }}
+              style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0,
+                borderRadius: '24px 24px 0 0',
+                zIndex: 50,
+                height: '78vh',
+                display: 'flex',
+                flexDirection: 'column',
+                background: '#F6F6F4',
+                boxShadow: '0 -8px 48px rgba(0,0,0,0.35)',
+                overflow: 'hidden',
+              }}
               onClick={e => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white px-5 py-4 rounded-t-3xl flex items-center justify-between shrink-0">
+              {/* ── Header ── */}
+              <div style={{
+                position: 'relative',
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, #1A3D2E 0%, #245E42 60%, #1A3D2E 100%)',
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexShrink: 0,
+                borderRadius: '24px 24px 0 0',
+              }}>
+                {/* Soft mint radial sweep */}
+                <div style={{
+                  position: 'absolute', top: -24, left: -24, width: 130, height: 130,
+                  background: 'radial-gradient(circle, rgba(92,199,160,0.15) 0%, transparent 65%)',
+                  pointerEvents: 'none',
+                }} />
+                {/* Dot grid texture */}
+                <div style={{
+                  position: 'absolute', inset: 0, opacity: 0.06,
+                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)',
+                  backgroundSize: '14px 14px',
+                  pointerEvents: 'none',
+                }} />
 
-                {/* Background decorative orbs */}
-                <div className="pointer-events-none absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/5 blur-2xl" />
-                <div className="pointer-events-none absolute -bottom-4 left-10 w-20 h-20 rounded-full bg-teal-300/10 blur-xl" />
-
-                {/* Subtle dot-grid texture overlay */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-[0.06]"
-                  style={{
-                    backgroundImage:
-                      'radial-gradient(circle, white 1px, transparent 1px)',
-                    backgroundSize: '14px 14px',
-                  }}
-                />
-
-                <div className="flex items-center gap-3 relative z-10">
-                  {/* Avatar container — rotating conic shimmer ring */}
-                  <div className="relative flex items-center justify-center">
-                    {/* Outer shimmer ring */}
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
-                      className="absolute inset-0 rounded-full"
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
+                  {/* Avatar squircle */}
+                  <div style={{ position: 'relative', width: 46, height: 46, flexShrink: 0 }}>
+                    {/* Slow mint shimmer ring */}
+                    <motion.span
                       style={{
-                        background:
-                          'conic-gradient(from 0deg, transparent 60%, rgba(255,255,255,0.55) 80%, transparent 100%)',
-                        width: 48,
-                        height: 48,
-                        borderRadius: '50%',
+                        position: 'absolute', inset: -1.5, borderRadius: 15,
+                        background: 'conic-gradient(from 0deg, rgba(92,199,160,0.9) 0deg, rgba(26,61,46,0.1) 120deg, rgba(92,199,160,0.0) 200deg, rgba(92,199,160,0.9) 360deg)',
+                        pointerEvents: 'none',
                       }}
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
                     />
-                    {/* Inner disc */}
-                    <div
-                      className="relative flex items-center justify-center rounded-full"
-                      style={{
-                        width: 42,
-                        height: 42,
-                        background:
-                          'radial-gradient(circle at 35% 35%, #34d399, #059669 60%, #047857)',
-                        boxShadow: '0 0 0 1.5px rgba(255,255,255,0.18) inset, 0 4px 12px rgba(0,0,0,0.25)',
-                      }}
-                    >
-                      {/* 4-point geometric star icon */}
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 22 22"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        {/* Main 4-point star */}
-                        <path
-                          d="M11 2 C11 2 11.9 7.2 14.8 9.2 C17.7 11.2 22 11 22 11 C22 11 17.7 10.8 14.8 12.8 C11.9 14.8 11 20 11 20 C11 20 10.1 14.8 7.2 12.8 C4.3 10.8 0 11 0 11 C0 11 4.3 11.2 7.2 9.2 C10.1 7.2 11 2 11 2 Z"
-                          fill="white"
-                          fillOpacity="0.97"
-                        />
-                        {/* Small accent star top-right */}
-                        <path
-                          d="M18 2 C18 2 18.45 4.1 19.7 4.95 C20.95 5.8 23 5.75 23 5.75 C23 5.75 20.95 5.7 19.7 6.55 C18.45 7.4 18 9.5 18 9.5 C18 9.5 17.55 7.4 16.3 6.55 C15.05 5.7 13 5.75 13 5.75 C13 5.75 15.05 5.8 16.3 4.95 C17.55 4.1 18 2 18 2 Z"
-                          fill="white"
-                          fillOpacity="0.5"
-                          transform="scale(0.38) translate(19, 0)"
-                        />
+                    {/* Avatar body */}
+                    <div style={{
+                      position: 'absolute', inset: 2, borderRadius: 12,
+                      background: 'linear-gradient(145deg, #1A3D2E, #2D6A4F)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 26 26" fill="none">
+                        <path d="M13 2 L14.6 10.4 L23 12 L14.6 13.6 L13 22 L11.4 13.6 L3 12 L11.4 10.4 Z" fill="white" fillOpacity="0.92" />
+                        <path d="M20.5 3.5 L21.2 6.3 L24 7 L21.2 7.7 L20.5 10.5 L19.8 7.7 L17 7 L19.8 6.3 Z" fill="white" fillOpacity="0.48" />
                       </svg>
                     </div>
                   </div>
 
-                  {/* Text info */}
                   <div>
-                    <p className="font-bold text-sm tracking-wide">
+                    <p style={{ fontWeight: 700, fontSize: 14, color: '#fff', letterSpacing: '0.01em' }}>
                       {t('budgetCoach', lang)}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <p className="text-xs text-white/75">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                      <motion.span
+                        style={{
+                          width: 6, height: 6, borderRadius: '50%',
+                          background: '#5CC7A0',
+                          display: 'inline-block',
+                        }}
+                        animate={{ opacity: [1, 0.4, 1] }}
+                        transition={{ duration: 2.2, repeat: Infinity }}
+                      />
+                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>
                         {t('askAboutSpending', lang)}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Close button */}
+                {/* Close */}
                 <motion.button
                   whileTap={{ scale: 0.88 }}
                   onClick={() => setOpen(false)}
-                  className="relative z-10 p-2 rounded-full bg-white/15 hover:bg-white/25 transition-colors border border-white/20 backdrop-blur-sm"
+                  style={{
+                    position: 'relative', zIndex: 1,
+                    padding: 8, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
                   aria-label="Close"
                 >
-                  <X className="w-4 h-4" />
+                  <X size={16} />
                 </motion.button>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+              {/* ── Messages ── */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {messages.map((msg, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    transition={{ duration: 0.2 }}
+                    style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start' }}
                   >
                     {msg.role === 'assistant' && (
-                      <div className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center mr-2 shrink-0 mt-0.5">
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 9,
+                        background: 'linear-gradient(145deg, #1A3D2E, #2D6A4F)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        marginRight: 8, flexShrink: 0, marginTop: 2,
+                        boxShadow: '0 2px 8px rgba(26,61,46,0.25)',
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 26 26" fill="none">
+                          <path d="M13 2 L14.6 10.4 L23 12 L14.6 13.6 L13 22 L11.4 13.6 L3 12 L11.4 10.4 Z" fill="white" fillOpacity="0.9" />
+                        </svg>
                       </div>
                     )}
-                    <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-line ${
-                      msg.role === 'user'
-                        ? 'bg-emerald-600 text-white rounded-br-sm'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-                    }`}>
+                    <div style={{
+                      maxWidth: '78%',
+                      padding: '10px 14px',
+                      borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                      fontSize: 13,
+                      lineHeight: 1.5,
+                      whiteSpace: 'pre-line',
+                      ...(msg.role === 'user'
+                        ? {
+                            background: 'linear-gradient(135deg, #1A3D2E, #2D6A4F)',
+                            color: '#fff',
+                            boxShadow: '0 4px 14px rgba(26,61,46,0.3)',
+                          }
+                        : {
+                            background: '#fff',
+                            color: '#2D2B28',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+                          }
+                      ),
+                    }}>
                       {msg.text}
                     </div>
                   </motion.div>
@@ -438,18 +538,27 @@ export function AIAssistant() {
                 <div ref={bottomRef} />
               </div>
 
-              {/* Quick questions */}
+              {/* ── Quick questions ── */}
               {messages.length <= 1 && (
-                <div className="px-4 pb-2">
-                  <p className="text-xs text-gray-400 mb-2">
+                <div style={{ padding: '0 16px 10px' }}>
+                  <p style={{ fontSize: 11, color: '#928F8B', marginBottom: 8 }}>
                     {`💬 ${t('quickQuestions', lang)}`}
                   </p>
-                  <div className="flex gap-2 flex-wrap">
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {QUICK_QUESTIONS.map(q => (
                       <button
                         key={q}
                         onClick={() => sendMessage(q)}
-                        className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-full font-medium"
+                        style={{
+                          fontSize: 11, fontWeight: 600,
+                          background: '#EAF6F1',
+                          border: '1px solid rgba(47,117,86,0.25)',
+                          color: '#2F7556',
+                          padding: '6px 12px',
+                          borderRadius: 20,
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                        }}
                       >
                         {q}
                       </button>
@@ -458,22 +567,53 @@ export function AIAssistant() {
                 </div>
               )}
 
-              {/* Input */}
-              <div className="flex gap-2 px-4 pb-5 pt-2 shrink-0 border-t border-gray-100">
+              {/* ── Input row ── */}
+              <div style={{
+                display: 'flex', gap: 8,
+                padding: '10px 16px 20px',
+                flexShrink: 0,
+                borderTop: '1px solid #F4F4F2',
+                background: '#F6F6F4',
+              }}>
                 <input
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') sendMessage(input); }}
                   placeholder={t('askMeAnything', lang)}
-                  className="flex-1 border-2 border-gray-200 rounded-2xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400 transition"
+                  style={{
+                    flex: 1,
+                    border: '2px solid #F4F4F2',
+                    borderRadius: 22,
+                    padding: '10px 16px',
+                    fontSize: 13,
+                    outline: 'none',
+                    background: '#fff',
+                    color: '#2D2B28',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onFocus={e => { e.currentTarget.style.borderColor = '#2F7556'; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = '#F4F4F2'; }}
                 />
                 <motion.button
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: 0.88 }}
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim()}
-                  className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center text-white disabled:opacity-40 shrink-0"
+                  style={{
+                    width: 42, height: 42,
+                    borderRadius: '50%',
+                    background: input.trim()
+                      ? 'linear-gradient(135deg, #FD8240, #F55D3E)'
+                      : '#E8E6E3',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: input.trim() ? '#fff' : '#C4C2BF',
+                    flexShrink: 0,
+                    cursor: input.trim() ? 'pointer' : 'default',
+                    boxShadow: input.trim() ? '0 4px 14px rgba(253,130,64,0.4)' : 'none',
+                    transition: 'background 0.2s, box-shadow 0.2s',
+                    alignSelf: 'center',
+                  }}
                 >
-                  <Send className="w-4 h-4" />
+                  <Send size={16} />
                 </motion.button>
               </div>
             </motion.div>

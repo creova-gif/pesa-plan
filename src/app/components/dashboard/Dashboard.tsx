@@ -4,7 +4,7 @@ import {
   Home, PieChart, Layers, Sprout, Wallet,
   Bell, Plus, ChevronRight, Trash2,
   AlertTriangle, TrendingUp, TrendingDown,
-  Settings, Sparkles, Flame,
+  Settings, Sparkles, Flame, CreditCard, Users, X, Check, UserPlus, Split,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, ResponsiveContainer, Tooltip,
@@ -728,6 +728,7 @@ function BudgetTab({
   const { language: lang, transactions, categoryBudgets } = state;
   const fmt = (n: number) => formatCurrency(n, state.region);
   const [period, setPeriod] = useState<Period>('month');
+  const [showNewBudgetType, setShowNewBudgetType] = useState(false);
 
   const now = new Date();
   const monthName = now.toLocaleDateString(lang === 'sw' ? 'sw' : 'en', { month: 'long' });
@@ -783,19 +784,21 @@ function BudgetTab({
             onClick={() => setPeriod(p)}
           />
         ))}
-        <button
-          onClick={onOpenBudgetLimits}
-          style={{
-            marginLeft: 'auto',
-            padding: 6,
-            borderRadius: '50%',
-            background: '#F6F6F4',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          <Settings size={14} color="#4D4845" />
-        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          <button
+            onClick={() => setShowNewBudgetType(true)}
+            style={{ padding: '6px 12px', borderRadius: 999, background: '#FD8240', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            <Plus size={13} color="#fff" />
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif' }}>{lang === 'sw' ? 'Mpya' : 'New'}</span>
+          </button>
+          <button
+            onClick={onOpenBudgetLimits}
+            style={{ padding: 6, borderRadius: '50%', background: '#F6F6F4', border: 'none', cursor: 'pointer' }}
+          >
+            <Settings size={14} color="#4D4845" />
+          </button>
+        </div>
       </div>
 
       {/* Smart budget builder */}
@@ -1087,6 +1090,120 @@ function BudgetTab({
           </button>
         </div>
       </MkCard>
+
+      {/* Budget "New" type selection sheet */}
+      <AnimatePresence>
+        {showNewBudgetType && (
+          <>
+            <motion.div
+              key="budget-backdrop"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50 }}
+              onClick={() => setShowNewBudgetType(false)}
+            />
+            <motion.div
+              key="budget-sheet"
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderRadius: '24px 24px 0 0', zIndex: 51, padding: '20px 20px 48px' }}
+            >
+              {/* Handle */}
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: '#F4F4F2', margin: '0 auto 20px' }} />
+
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <p style={{ fontSize: 18, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}>
+                  {lang === 'sw' ? 'Chagua Aina' : 'Select Type'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowNewBudgetType(false)}
+                  style={{ width: 32, height: 32, borderRadius: '50%', background: '#F6F6F4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: '#4D4845' }}
+                >
+                  ✕
+                </button>
+              </div>
+              <p style={{ fontSize: 13, color: '#928F8B', marginBottom: 20, fontFamily: 'Geist, sans-serif' }}>
+                {lang === 'sw' ? 'Chagua ni aina gani ya bajeti ungependa kuongeza' : 'Choose what type of budget item you want to add'}
+              </p>
+
+              {/* 3 type cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* Budget */}
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowNewBudgetType(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px', borderRadius: 16, background: '#1A3D2E', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5"/>
+                      <path d="M12 2 A10 10 0 0 1 22 12 L12 12 Z" fill="white" opacity="0.8"/>
+                      <path d="M12 12 L22 12 A10 10 0 0 1 12 22 Z" fill="white" opacity="0.5"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif', marginBottom: 3 }}>
+                      {lang === 'sw' ? 'Bajeti' : 'Budget'}
+                    </p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', fontFamily: 'Geist, sans-serif', lineHeight: 1.4 }}>
+                      {lang === 'sw' ? 'Tenga sehemu ya fedha zako na ufuatilie matumizi' : 'Allocate a portion of your funds and track your expenses'}
+                    </p>
+                  </div>
+                  <ChevronRight size={16} color="rgba(255,255,255,0.6)" style={{ flexShrink: 0 }} />
+                </motion.button>
+
+                {/* Bills */}
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowNewBudgetType(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px', borderRadius: 16, background: '#FFF3E8', border: '1.5px solid #FD824030', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FD8240', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', marginBottom: 3 }}>
+                      {lang === 'sw' ? 'Bili' : 'Bills'}
+                    </p>
+                    <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif', lineHeight: 1.4 }}>
+                      {lang === 'sw' ? 'Gharama zinazorudiwa kama kodi, umeme, n.k.' : 'Recurring expenses like rent, utility, etc.'}
+                    </p>
+                  </div>
+                  <ChevronRight size={16} color="#A6A4A0" style={{ flexShrink: 0 }} />
+                </motion.button>
+
+                {/* Subscription */}
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowNewBudgetType(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px', borderRadius: 16, background: '#FFF0ED', border: '1.5px solid #F55D3E30', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: '#F55D3E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 15, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', marginBottom: 3 }}>
+                      {lang === 'sw' ? 'Usajili' : 'Subscription'}
+                    </p>
+                    <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif', lineHeight: 1.4 }}>
+                      {lang === 'sw' ? 'Gharama za mara kwa mara kama streaming, uanachama' : 'Recurring expenses like streaming, memberships, etc.'}
+                    </p>
+                  </div>
+                  <ChevronRight size={16} color="#A6A4A0" style={{ flexShrink: 0 }} />
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1101,6 +1218,15 @@ const GOAL_CATEGORIES = [
 
 type GoalCat = typeof GOAL_CATEGORIES[number];
 
+const LIFE_GOALS = [
+  { id: 'home',     en: 'Own a Home',       sw: 'Miliki Nyumba',      emoji: '🏠' },
+  { id: 'family',   en: 'Start a Family',   sw: 'Anzisha Familia',    emoji: '👨‍👩‍👧' },
+  { id: 'business', en: 'Start a Business', sw: 'Anzisha Biashara',   emoji: '💼' },
+  { id: 'vacation', en: 'Go on a Vacation', sw: 'Tembelea Utalii',    emoji: '✈️' },
+  { id: 'tuition',  en: 'Pay for Tuition',  sw: 'Lipia Masomo',       emoji: '🎓' },
+  { id: 'retire',   en: 'Retirement',       sw: 'Kustaafu',           emoji: '🏖️' },
+];
+
 function NewGoalSheet({
   onClose,
   onConfirm,
@@ -1112,7 +1238,7 @@ function NewGoalSheet({
   lang: import('@/app/App').Language;
   region: import('@/app/utils/currency').Region;
 }) {
-  const [phase, setPhase] = useState<'pick' | 'detail'>('pick');
+  const [phase, setPhase] = useState<'pick' | 'life-goals' | 'detail'>('pick');
   const [cat, setCat] = useState<GoalCat | null>(null);
   const [customName, setCustomName] = useState('');
   const [amount, setAmount] = useState('');
@@ -1121,7 +1247,19 @@ function NewGoalSheet({
   const catLabel = (c: GoalCat) =>
     lang === 'sw' ? c.sw : lang === 'fr' ? c.fr : lang === 'ar' ? c.ar : lang === 'pt' ? c.pt : c.en;
 
-  const handlePick = (c: GoalCat) => { setCat(c); setPhase('detail'); };
+  const handlePick = (c: GoalCat) => {
+    setCat(c);
+    if (c.id === 'life') {
+      setPhase('life-goals');
+    } else {
+      setPhase('detail');
+    }
+  };
+
+  const handleLifeGoalPick = (g: typeof LIFE_GOALS[number]) => {
+    setCustomName(lang === 'sw' ? g.sw : g.en);
+    setPhase('detail');
+  };
 
   const handleSave = () => {
     const num = parseInt(amount);
@@ -1140,38 +1278,44 @@ function NewGoalSheet({
     en: 'Create Goal', sw: 'Unda Lengo', fr: 'Créer l\'objectif', ar: 'إنشاء الهدف', pt: 'Criar objetivo',
   };
 
+  const goBack = () => {
+    if (phase === 'detail' && cat?.id === 'life') setPhase('life-goals');
+    else if (phase === 'detail' || phase === 'life-goals') setPhase('pick');
+  };
+
   return (
     <motion.div
-      initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-      transition={{ type: 'spring', stiffness: 300, damping: 34 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 300, damping: 34 }}
-        style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', maxHeight: '85vh', overflowY: 'auto' }}
+        style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', maxHeight: '90vh', overflowY: 'auto' }}
       >
         {/* Handle */}
         <div style={{ width: 36, height: 4, borderRadius: 2, background: '#F4F4F2', margin: '0 auto 20px' }} />
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          {phase === 'detail' ? (
-            <button onClick={() => setPhase('pick')} style={{ padding: 8, background: '#F6F6F4', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {phase !== 'pick' ? (
+            <button type="button" onClick={goBack} style={{ padding: 8, background: '#F6F6F4', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ChevronRight size={18} color="#4D4845" style={{ transform: 'rotate(180deg)' }} />
             </button>
           ) : <div style={{ width: 36 }} />}
           <p style={{ fontSize: 17, fontWeight: 600, color: '#4D4845', fontFamily: 'Geist, sans-serif' }}>
-            {titleMap[lang]}
+            {phase === 'life-goals'
+              ? (lang === 'sw' ? 'Malengo ya Maisha' : 'Life Goals')
+              : titleMap[lang]}
           </p>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F6F6F4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#4D4845' }}>
+          <button type="button" onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F6F6F4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#4D4845' }}>
             ✕
           </button>
         </div>
 
         <AnimatePresence mode="wait">
-          {phase === 'pick' ? (
+          {phase === 'pick' && (
             <motion.div key="pick" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <p style={{ fontSize: 14, color: '#928F8B', marginBottom: 16, fontFamily: 'Geist, sans-serif' }}>
                 {chooseMap[lang]}
@@ -1180,6 +1324,7 @@ function NewGoalSheet({
                 {GOAL_CATEGORIES.map(c => (
                   <motion.button
                     key={c.id}
+                    type="button"
                     onClick={() => handlePick(c)}
                     whileTap={{ scale: 0.97 }}
                     style={{
@@ -1196,7 +1341,36 @@ function NewGoalSheet({
                 ))}
               </div>
             </motion.div>
-          ) : (
+          )}
+
+          {phase === 'life-goals' && (
+            <motion.div key="life-goals" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <p style={{ fontSize: 14, color: '#928F8B', marginBottom: 16, fontFamily: 'Geist, sans-serif' }}>
+                {lang === 'sw' ? 'Chagua lengo la maisha yako' : 'Select a life goal to save toward'}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {LIFE_GOALS.map(g => (
+                  <motion.button
+                    key={g.id}
+                    type="button"
+                    onClick={() => handleLifeGoalPick(g)}
+                    whileTap={{ scale: 0.98 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 4px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', borderBottom: '1px solid #F4F4F2' }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1A3D2E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
+                      {g.emoji}
+                    </div>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', flex: 1 }}>
+                      {lang === 'sw' ? g.sw : g.en}
+                    </p>
+                    <ChevronRight size={16} color="#A6A4A0" style={{ flexShrink: 0 }} />
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {phase === 'detail' && (
             <motion.div key="detail" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
               style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Category pill */}
@@ -1235,6 +1409,7 @@ function NewGoalSheet({
               </div>
 
               <button
+                type="button"
                 onClick={handleSave}
                 disabled={!amount || parseInt(amount) < 1}
                 style={{
@@ -1850,6 +2025,442 @@ function SendMoneyModal({ onClose, lang }: { onClose: () => void; lang: import('
 }
 
 // ─── WALLET TAB ───────────────────────────────────────────────────────────────
+// ─── LINKED CARD types ────────────────────────────────────────────────────────
+interface LinkedCard {
+  id: string;
+  type: 'mastercard' | 'visa' | 'amex';
+  last4: string;
+  bank: string;
+  holder: string;
+  expiry: string;
+  monthlySpend: number;
+  gradient: [string, string];
+}
+
+interface SplitBill {
+  id: string;
+  description: string;
+  total: number;
+  participants: { name: string; initials: string; color: string; paid: boolean }[];
+  createdAt: Date;
+}
+
+// Mastercard logo
+function MastercardLogo({ size = 28 }: { size?: number }) {
+  const r = size * 0.5;
+  const overlap = size * 0.18;
+  return (
+    <svg width={size * 1.5} height={size} viewBox={`0 0 ${size * 1.5} ${size}`}>
+      <circle cx={r} cy={r} r={r} fill="#EB001B" />
+      <circle cx={r * 1.5 + overlap} cy={r} r={r} fill="#F79E1B" fillOpacity={0.9} />
+      <circle cx={r * 1.5 + overlap} cy={r} r={r} fill="url(#mcoverlap)" />
+      <defs>
+        <clipPath id="mcclip"><circle cx={r} cy={r} r={r} /></clipPath>
+        <circle id="mcoverlap" cx={r * 1.5 + overlap} cy={r} r={r} fill="#FF5F00" clipPath="url(#mcclip)" />
+      </defs>
+      {/* overlap blend */}
+      <path d={`M ${r+overlap/2} ${r - r*0.85} A ${r} ${r} 0 0 1 ${r+overlap/2} ${r + r*0.85} A ${r} ${r} 0 0 1 ${r+overlap/2} ${r - r*0.85}`} fill="#FF5F00" opacity={0.6} />
+    </svg>
+  );
+}
+
+function VisaLogo({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size * 2} height={size} viewBox="0 0 60 20">
+      <text x="0" y="16" fontFamily="Arial" fontWeight="bold" fontSize="18" fill="white" letterSpacing="-1">VISA</text>
+    </svg>
+  );
+}
+
+function CardVisual({ card }: { card: LinkedCard }) {
+  const isVisa = card.type === 'visa';
+  return (
+    <div style={{
+      width: 280, height: 165, borderRadius: 20, flexShrink: 0,
+      background: `linear-gradient(135deg, ${card.gradient[0]}, ${card.gradient[1]})`,
+      padding: '20px 22px', display: 'flex', flexDirection: 'column',
+      justifyContent: 'space-between', position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Decorative circles */}
+      <div style={{ position: 'absolute', top: -40, right: -30, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
+      <div style={{ position: 'absolute', bottom: -50, right: 20, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+
+      {/* Top row: bank + network */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.9)', fontFamily: 'Geist, sans-serif' }}>{card.bank}</p>
+        {isVisa ? <VisaLogo size={18} /> : <MastercardLogo size={22} />}
+      </div>
+
+      {/* Chip + number */}
+      <div>
+        {/* Chip */}
+        <div style={{ width: 32, height: 24, borderRadius: 5, background: 'rgba(255,215,100,0.7)', marginBottom: 12, border: '1px solid rgba(255,215,100,0.4)' }} />
+        <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.85)', letterSpacing: '2px', fontFamily: 'Geist Mono, monospace' }}>
+          •••• •••• •••• {card.last4}
+        </p>
+      </div>
+
+      {/* Bottom: holder + expiry */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Geist, sans-serif' }}>Card Holder</p>
+          <p style={{ fontSize: 12, fontWeight: 500, color: '#fff', fontFamily: 'Geist, sans-serif' }}>{card.holder}</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Geist, sans-serif' }}>Expires</p>
+          <p style={{ fontSize: 12, fontWeight: 500, color: '#fff', fontFamily: 'Geist, sans-serif' }}>{card.expiry}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LinkCardSheet({ onClose, onAdd, lang }: {
+  onClose: () => void;
+  onAdd: (card: Omit<LinkedCard, 'id' | 'monthlySpend'>) => void;
+  lang: string;
+}) {
+  const [step, setStep] = useState<'type' | 'details'>('type');
+  const [cardType, setCardType] = useState<'mastercard' | 'visa' | 'amex'>('mastercard');
+  const [number, setNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [holder, setHolder] = useState('');
+  const [bank, setBank] = useState('');
+
+  const last4 = number.replace(/\s/g, '').slice(-4);
+
+  const gradients: Record<string, [string, string]> = {
+    mastercard: ['#1A3D2E', '#2D6A4F'],
+    visa:       ['#1a1f36', '#2d3561'],
+    amex:       ['#2C5F8A', '#1a3d5c'],
+  };
+
+  const handleAdd = () => {
+    if (!holder || !expiry || number.replace(/\s/g, '').length < 12) return;
+    onAdd({ type: cardType, last4: last4 || '0000', bank: bank || 'My Bank', holder, expiry, gradient: gradients[cardType] });
+  };
+
+  const formatCardNumber = (v: string) => {
+    const digits = v.replace(/\D/g, '').slice(0, 16);
+    return digits.replace(/(.{4})/g, '$1 ').trim();
+  };
+  const formatExpiry = (v: string) => {
+    const digits = v.replace(/\D/g, '').slice(0, 4);
+    return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+  };
+
+  const networkTypes = [
+    { id: 'mastercard', label: 'Mastercard' },
+    { id: 'visa',       label: 'Visa' },
+    { id: 'amex',       label: 'Amex' },
+  ] as const;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 34 }}
+        style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 44px', maxHeight: '92vh', overflowY: 'auto' }}
+      >
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#F4F4F2', margin: '0 auto 20px' }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          {step === 'details' ? (
+            <button type="button" onClick={() => setStep('type')} style={{ padding: 8, background: '#F6F6F4', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}>
+              <ChevronRight size={18} color="#4D4845" style={{ transform: 'rotate(180deg)' }} />
+            </button>
+          ) : <div style={{ width: 36 }} />}
+          <p style={{ fontSize: 17, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}>
+            {lang === 'sw' ? 'Unganisha Kadi' : 'Link a Card'}
+          </p>
+          <button type="button" onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F6F6F4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={16} color="#4D4845" />
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {step === 'type' ? (
+            <motion.div key="type" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <p style={{ fontSize: 14, color: '#928F8B', marginBottom: 16, fontFamily: 'Geist, sans-serif' }}>
+                {lang === 'sw' ? 'Chagua mtandao wa kadi yako' : 'Select your card network'}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {networkTypes.map(n => (
+                  <motion.button
+                    key={n.id}
+                    type="button"
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { setCardType(n.id); setStep('details'); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      padding: '16px 18px', borderRadius: 16, cursor: 'pointer',
+                      background: '#F6F6F4', border: '1.5px solid #F4F4F2', textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: gradients[n.id][0], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {n.id === 'visa' ? <VisaLogo size={14} /> : n.id === 'mastercard' ? <MastercardLogo size={18} /> : <CreditCard size={20} color="#fff" />}
+                    </div>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', flex: 1 }}>{n.label}</p>
+                    <ChevronRight size={16} color="#A6A4A0" />
+                  </motion.button>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 20, padding: '14px 16px', background: '#F6F6F4', borderRadius: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 16 }}>🔒</span>
+                <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif', lineHeight: 1.5 }}>
+                  {lang === 'sw'
+                    ? 'Kadi yako inalindwa. Hatuhifadhi nambari kamili ya kadi.'
+                    : 'Your card is protected with 256-bit encryption. We never store your full card number.'}
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Live card preview */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+                <CardVisual card={{ id: 'preview', type: cardType, last4: last4 || '0000', bank: bank || 'My Bank', holder: holder || 'Card Holder', expiry: expiry || 'MM/YY', monthlySpend: 0, gradient: gradients[cardType] }} />
+              </div>
+
+              {[
+                { label: lang === 'sw' ? 'Jina la Benki' : 'Bank Name', value: bank, setter: setBank, placeholder: 'e.g. Chase, Barclays', type: 'text' },
+                { label: lang === 'sw' ? 'Jina la Mwenye Kadi' : 'Card Holder Name', value: holder, setter: setHolder, placeholder: 'Full name on card', type: 'text' },
+              ].map(f => (
+                <div key={f.label}>
+                  <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'Geist, sans-serif' }}>{f.label}</p>
+                  <input
+                    type={f.type} value={f.value} placeholder={f.placeholder}
+                    onChange={e => f.setter(e.target.value)}
+                    style={{ width: '100%', background: '#F6F6F4', border: '1.5px solid #F4F4F2', color: '#1A3D2E', borderRadius: 12, padding: '13px 16px', fontSize: 15, outline: 'none', fontFamily: 'Geist, sans-serif', boxSizing: 'border-box' }}
+                    onFocus={e => (e.target.style.borderColor = '#4E886F')}
+                    onBlur={e => (e.target.style.borderColor = '#F4F4F2')}
+                  />
+                </div>
+              ))}
+
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'Geist, sans-serif' }}>Card Number</p>
+                <input
+                  type="tel" inputMode="numeric" value={number} placeholder="0000 0000 0000 0000"
+                  onChange={e => setNumber(formatCardNumber(e.target.value))}
+                  style={{ width: '100%', background: '#F6F6F4', border: '1.5px solid #F4F4F2', color: '#1A3D2E', borderRadius: 12, padding: '13px 16px', fontSize: 15, outline: 'none', fontFamily: 'Geist Mono, monospace', letterSpacing: '2px', boxSizing: 'border-box' }}
+                  onFocus={e => (e.target.style.borderColor = '#4E886F')}
+                  onBlur={e => (e.target.style.borderColor = '#F4F4F2')}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'Geist, sans-serif' }}>Expiry</p>
+                  <input
+                    type="tel" inputMode="numeric" value={expiry} placeholder="MM/YY"
+                    onChange={e => setExpiry(formatExpiry(e.target.value))}
+                    style={{ width: '100%', background: '#F6F6F4', border: '1.5px solid #F4F4F2', color: '#1A3D2E', borderRadius: 12, padding: '13px 16px', fontSize: 15, outline: 'none', fontFamily: 'Geist Mono, monospace', letterSpacing: '2px', boxSizing: 'border-box' }}
+                    onFocus={e => (e.target.style.borderColor = '#4E886F')}
+                    onBlur={e => (e.target.style.borderColor = '#F4F4F2')}
+                  />
+                </div>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'Geist, sans-serif' }}>CVV</p>
+                  <input
+                    type="password" inputMode="numeric" maxLength={4} value={cvv} placeholder="•••"
+                    onChange={e => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    style={{ width: '100%', background: '#F6F6F4', border: '1.5px solid #F4F4F2', color: '#1A3D2E', borderRadius: 12, padding: '13px 16px', fontSize: 15, outline: 'none', fontFamily: 'Geist, sans-serif', boxSizing: 'border-box' }}
+                    onFocus={e => (e.target.style.borderColor = '#4E886F')}
+                    onBlur={e => (e.target.style.borderColor = '#F4F4F2')}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button" onClick={handleAdd}
+                disabled={!holder || !expiry || number.replace(/\s/g, '').length < 12}
+                style={{
+                  width: '100%', padding: '16px 0', borderRadius: 999, border: 'none',
+                  background: holder && expiry && number.replace(/\s/g, '').length >= 12 ? '#4E886F' : '#F4F4F2',
+                  color: holder && expiry && number.replace(/\s/g, '').length >= 12 ? '#fff' : '#928F8B',
+                  fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'Geist, sans-serif', transition: 'all 0.2s',
+                }}
+              >
+                {lang === 'sw' ? 'Unganisha Kadi' : 'Link Card'}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+const SPLIT_CONTACTS = [
+  { name: 'Alice',   initials: 'A', color: '#4E886F' },
+  { name: 'Brian',   initials: 'B', color: '#FD8240' },
+  { name: 'Cynthia', initials: 'C', color: '#215B44' },
+  { name: 'David',   initials: 'D', color: '#F55D3E' },
+  { name: 'Eva',     initials: 'E', color: '#4D4845' },
+  { name: 'Felix',   initials: 'F', color: '#9B59B6' },
+];
+
+function SplitBillSheet({ onClose, onAdd, lang, region }: {
+  onClose: () => void;
+  onAdd: (split: Omit<SplitBill, 'id' | 'createdAt'>) => void;
+  lang: string;
+  region: import('@/app/utils/currency').Region;
+}) {
+  const cfg = REGION_CONFIG[region];
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const perPerson = selected.length > 0 && parseFloat(amount) > 0
+    ? parseFloat(amount) / (selected.length + 1)
+    : 0;
+
+  const toggle = (name: string) =>
+    setSelected(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
+
+  const handleCreate = () => {
+    if (!description || !amount || selected.length === 0) return;
+    const participants = [
+      { name: 'You', initials: 'Y', color: '#1A3D2E', paid: true },
+      ...selected.map(n => {
+        const c = SPLIT_CONTACTS.find(c => c.name === n)!;
+        return { name: c.name, initials: c.initials, color: c.color, paid: false };
+      }),
+    ];
+    onAdd({ description, total: parseFloat(amount), participants });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 34 }}
+        style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 44px', maxHeight: '90vh', overflowY: 'auto' }}
+      >
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#F4F4F2', margin: '0 auto 20px' }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ width: 36 }} />
+          <p style={{ fontSize: 17, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}>
+            {lang === 'sw' ? 'Gawanya Bili' : 'Split a Bill'}
+          </p>
+          <button type="button" onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: '#F6F6F4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={16} color="#4D4845" />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Description */}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'Geist, sans-serif' }}>
+              {lang === 'sw' ? 'Maelezo' : 'Description'}
+            </p>
+            <input
+              type="text" value={description} placeholder={lang === 'sw' ? 'mf. Chakula cha jioni' : 'e.g. Dinner, Rent, Trip'}
+              onChange={e => setDescription(e.target.value)}
+              style={{ width: '100%', background: '#F6F6F4', border: '1.5px solid #F4F4F2', color: '#1A3D2E', borderRadius: 12, padding: '13px 16px', fontSize: 15, outline: 'none', fontFamily: 'Geist, sans-serif', boxSizing: 'border-box' }}
+              onFocus={e => (e.target.style.borderColor = '#4E886F')}
+              onBlur={e => (e.target.style.borderColor = '#F4F4F2')}
+            />
+          </div>
+
+          {/* Amount */}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: 'Geist, sans-serif' }}>
+              {lang === 'sw' ? 'Jumla ya Bili' : 'Total Amount'}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F6F6F4', border: '1.5px solid #F4F4F2', borderRadius: 12, padding: '13px 16px' }}>
+              <span style={{ fontSize: 16, fontWeight: 600, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>{cfg.symbol}</span>
+              <input
+                type="number" inputMode="decimal" value={amount} placeholder="0.00"
+                onChange={e => setAmount(e.target.value)}
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 22, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}
+              />
+            </div>
+          </div>
+
+          {/* Contacts */}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 500, color: '#928F8B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontFamily: 'Geist, sans-serif' }}>
+              {lang === 'sw' ? 'Chagua washiriki' : 'Split with'}
+            </p>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              {SPLIT_CONTACTS.map(c => {
+                const isSelected = selected.includes(c.name);
+                return (
+                  <button
+                    key={c.name} type="button"
+                    onClick={() => toggle(c.name)}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    <div style={{
+                      width: 50, height: 50, borderRadius: '50%', background: isSelected ? c.color : '#F6F6F4',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: isSelected ? `2.5px solid ${c.color}` : '2px solid #F4F4F2',
+                      position: 'relative', transition: 'all 0.15s',
+                    }}>
+                      <span style={{ fontSize: 17, fontWeight: 600, color: isSelected ? '#fff' : '#928F8B', fontFamily: 'Geist, sans-serif' }}>{c.initials}</span>
+                      {isSelected && (
+                        <div style={{ position: 'absolute', bottom: -2, right: -2, width: 18, height: 18, borderRadius: '50%', background: '#4E886F', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Check size={10} color="#fff" strokeWidth={3} />
+                        </div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 11, color: isSelected ? '#1A3D2E' : '#928F8B', fontFamily: 'Geist, sans-serif', fontWeight: isSelected ? 500 : 400 }}>{c.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Per-person preview */}
+          {perPerson > 0 && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              style={{ background: '#F0F7F4', borderRadius: 14, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <div>
+                <p style={{ fontSize: 12, color: '#4E886F', fontFamily: 'Geist, sans-serif' }}>
+                  {lang === 'sw' ? 'Kila mtu analipa' : 'Each person pays'}
+                </p>
+                <p style={{ fontSize: 22, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}>
+                  {cfg.symbol}{perPerson.toFixed(2)}
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Users size={14} color="#4E886F" />
+                <span style={{ fontSize: 13, color: '#4E886F', fontFamily: 'Geist, sans-serif' }}>{selected.length + 1} {lang === 'sw' ? 'watu' : 'people'}</span>
+              </div>
+            </motion.div>
+          )}
+
+          <button
+            type="button" onClick={handleCreate}
+            disabled={!description || !amount || selected.length === 0}
+            style={{
+              width: '100%', padding: '16px 0', borderRadius: 999, border: 'none',
+              background: description && amount && selected.length > 0 ? '#1A3D2E' : '#F4F4F2',
+              color: description && amount && selected.length > 0 ? '#fff' : '#928F8B',
+              fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'Geist, sans-serif', transition: 'all 0.2s',
+            }}
+          >
+            {lang === 'sw' ? 'Unda Mgawanyo' : 'Create Split'}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function WalletTab({
   onAddIncome,
   onAddExpense,
@@ -1867,79 +2478,305 @@ function WalletTab({
   const { language: lang } = state;
   const fmt = (n: number) => formatCurrency(n, state.region);
   const [showSend, setShowSend] = useState(false);
+  const [showLinkCard, setShowLinkCard] = useState(false);
+  const [showSplitBill, setShowSplitBill] = useState(false);
+  const [linkedCards, setLinkedCards] = useState<LinkedCard[]>([
+    { id: '1', type: 'mastercard', last4: '5642', bank: 'Chase Bank', holder: 'J. Mafie', expiry: '09/27', monthlySpend: 312.45, gradient: ['#1A3D2E', '#2D6A4F'] },
+  ]);
+  const [splits, setSplits] = useState<SplitBill[]>([
+    {
+      id: '1',
+      description: 'Dinner at Nusr-Et',
+      total: 180,
+      participants: [
+        { name: 'You',    initials: 'Y', color: '#1A3D2E', paid: true },
+        { name: 'Alice',  initials: 'A', color: '#4E886F', paid: true },
+        { name: 'Brian',  initials: 'B', color: '#FD8240', paid: false },
+      ],
+      createdAt: new Date(Date.now() - 86400000 * 2),
+    },
+  ]);
 
   const walletTotal = state.cashBalance + state.mobileMoneyBalance + state.bankBalance;
-
-  const balances = [
-    { label: lang === 'sw' ? 'Pesa Taslimu' : lang === 'fr' ? 'Espèces' : lang === 'ar' ? 'نقداً' : lang === 'pt' ? 'Dinheiro' : 'Cash',
-      amount: state.cashBalance, emoji: '💵', color: '#215B44' },
-    { label: 'M-Pesa / Mobile',
-      amount: state.mobileMoneyBalance, emoji: '📱', color: '#4E886F' },
-    { label: lang === 'sw' ? 'Benki' : lang === 'fr' ? 'Banque' : lang === 'ar' ? 'بنك' : lang === 'pt' ? 'Banco' : 'Bank',
-      amount: state.bankBalance, emoji: '🏦', color: '#FD8240' },
-    { label: lang === 'sw' ? 'Mkopo' : lang === 'fr' ? 'Prêt' : lang === 'ar' ? 'قرض' : lang === 'pt' ? 'Empréstimo' : 'Loan',
-      amount: state.loanBalance, emoji: '💳', color: '#C9362B' },
-  ];
 
   const quickSend = [
     { name: 'Alice',   initials: 'A', color: '#4E886F' },
     { name: 'Brian',   initials: 'B', color: '#FD8240' },
     { name: 'Cynthia', initials: 'C', color: '#215B44' },
     { name: 'David',   initials: 'D', color: '#F55D3E' },
-    { name: 'Eva',     initials: 'E', color: '#4D4845' },
   ];
-
-  const sendLabel = lang === 'sw' ? 'Tuma' : lang === 'fr' ? 'Envoyer' : lang === 'ar' ? 'إرسال' : lang === 'pt' ? 'Enviar' : 'Send';
-  const fundLabel = lang === 'sw' ? 'Ingiza' : lang === 'fr' ? 'Recharger' : lang === 'ar' ? 'تعبئة' : lang === 'pt' ? 'Carregar' : 'Fund';
-  const receiveLabel = lang === 'sw' ? 'Pokea' : lang === 'fr' ? 'Recevoir' : lang === 'ar' ? 'استقبال' : lang === 'pt' ? 'Receber' : 'Receive';
-  const historyLabel = lang === 'sw' ? 'Historia ya Miamala' : lang === 'fr' ? 'Historique' : lang === 'ar' ? 'السجل' : lang === 'pt' ? 'Histórico' : 'Transaction History';
 
   return (
     <>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '8px 20px 100px' }}>
+
         {/* Wallet balance */}
         <MkCard>
           <div style={{ padding: 20 }}>
             <p style={{ fontSize: 14, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
-              {lang === 'sw' ? 'Salio la Mkoba' : lang === 'fr' ? 'Solde du portefeuille' : lang === 'ar' ? 'رصيد المحفظة' : lang === 'pt' ? 'Saldo da carteira' : 'Wallet Balance'}
+              {lang === 'sw' ? 'Salio la Mkoba' : 'Wallet Balance'}
             </p>
-            <p style={{ fontSize: 32, fontWeight: 400, color: '#4D4845', margin: '4px 0 16px', fontFamily: 'Geist, sans-serif' }}>
+            <p style={{ fontSize: 32, fontWeight: 400, color: '#1A3D2E', margin: '4px 0 16px', fontFamily: 'Geist, sans-serif' }}>
               {fmt(walletTotal)}
             </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Pill label={fundLabel} onClick={onAddIncome} />
-              <Pill label={sendLabel} onClick={() => setShowSend(true)} />
-              <Pill label={receiveLabel} onClick={onAddIncome} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Pill label={lang === 'sw' ? 'Ingiza' : 'Fund'} onClick={onAddIncome} />
+              <Pill label={lang === 'sw' ? 'Tuma' : 'Send'} onClick={() => setShowSend(true)} />
+              <Pill label={lang === 'sw' ? 'Pokea' : 'Receive'} onClick={onAddIncome} />
             </div>
           </div>
         </MkCard>
 
-        {/* Quick Send */}
+        {/* ── Linked Cards ─────────────────────────────────────────────────────── */}
         <div>
-          <SectionHeader label={lang === 'sw' ? 'Tuma Haraka' : lang === 'fr' ? 'Envoi rapide' : lang === 'ar' ? 'إرسال سريع' : lang === 'pt' ? 'Envio rápido' : 'Quick Send'} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <SectionHeader
+              label={lang === 'sw' ? 'Kadi Zilizounganishwa' : 'Linked Cards'}
+              sub={lang === 'sw' ? 'Fuatilia matumizi ya kadi yako' : 'Monitor your card spending'}
+            />
+            <button
+              type="button"
+              onClick={() => setShowLinkCard(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 999, background: '#1A3D2E', border: 'none', cursor: 'pointer' }}
+            >
+              <Plus size={12} color="#fff" />
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif' }}>
+                {lang === 'sw' ? 'Ongeza' : 'Add'}
+              </span>
+            </button>
+          </div>
+
+          {linkedCards.length === 0 ? (
+            <motion.button
+              type="button" whileTap={{ scale: 0.98 }}
+              onClick={() => setShowLinkCard(true)}
+              style={{
+                width: '100%', padding: '28px 20px', borderRadius: 20,
+                background: '#F6F6F4', border: '1.5px dashed #D0CEC9',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#1A3D2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CreditCard size={22} color="#fff" />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', marginBottom: 4 }}>
+                  {lang === 'sw' ? 'Unganisha Kadi Yako' : 'Link Your Card'}
+                </p>
+                <p style={{ fontSize: 13, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
+                  {lang === 'sw' ? 'Fuatilia matumizi yote mahali pamoja' : 'Track all spending in one place'}
+                </p>
+              </div>
+            </motion.button>
+          ) : (
+            <div>
+              {/* Horizontal card scroller */}
+              <div style={{ display: 'flex', gap: 14, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
+                {linkedCards.map(card => (
+                  <div key={card.id}>
+                    <CardVisual card={card} />
+                    {/* Spend summary below card */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, padding: '0 4px' }}>
+                      <div>
+                        <p style={{ fontSize: 11, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
+                          {lang === 'sw' ? 'Matumizi ya Mwezi' : 'Monthly Spend'}
+                        </p>
+                        <p style={{ fontSize: 15, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}>
+                          {fmt(card.monthlySpend)}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 999, background: '#F0F7F4' }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4E886F' }} />
+                        <span style={{ fontSize: 11, color: '#4E886F', fontFamily: 'Geist, sans-serif', fontWeight: 500 }}>
+                          {lang === 'sw' ? 'Imeunganishwa' : 'Connected'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add another card */}
+                <motion.button
+                  type="button" whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowLinkCard(true)}
+                  style={{
+                    width: 280, height: 165, borderRadius: 20, flexShrink: 0,
+                    background: '#F6F6F4', border: '1.5px dashed #D0CEC9',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#1A3D2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Plus size={18} color="#fff" />
+                  </div>
+                  <p style={{ fontSize: 13, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
+                    {lang === 'sw' ? 'Ongeza Kadi' : 'Add Another Card'}
+                  </p>
+                </motion.button>
+              </div>
+
+              {/* Recent card transactions from linked cards */}
+              {state.transactions.filter(t => t.type === 'expense').length > 0 && (
+                <MkCard style={{ marginTop: 16 }}>
+                  <div style={{ padding: 16 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#1A3D2E', marginBottom: 12, fontFamily: 'Geist, sans-serif' }}>
+                      {lang === 'sw' ? 'Miamala ya Hivi Karibuni' : 'Recent Card Activity'}
+                    </p>
+                    {state.transactions.filter(t => t.type === 'expense').slice(0, 3).map((tx, i, arr) => (
+                      <button
+                        key={tx.id} type="button" onClick={() => onTxSelect(tx)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid #F4F4F2' : 'none', width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      >
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#F6F6F4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
+                          {getCategoryIcon(tx.category)}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 14, fontWeight: 500, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.notes || tx.category}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                            <MastercardLogo size={12} />
+                            <span style={{ fontSize: 11, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>•••• {linkedCards[0]?.last4 ?? '0000'}</span>
+                          </div>
+                        </div>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: '#C9362B', flexShrink: 0, fontFamily: 'Geist, sans-serif' }}>
+                          -{fmt(tx.amount)}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </MkCard>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Split Bills ──────────────────────────────────────────────────────── */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <SectionHeader
+              label={lang === 'sw' ? 'Gawanya Bili' : 'Split Bills'}
+              sub={lang === 'sw' ? 'Gawanya gharama na marafiki' : 'Share expenses with friends'}
+            />
+            <button
+              type="button"
+              onClick={() => setShowSplitBill(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 999, background: '#FD8240', border: 'none', cursor: 'pointer' }}
+            >
+              <Split size={12} color="#fff" />
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif' }}>
+                {lang === 'sw' ? 'Gawanya' : 'New Split'}
+              </span>
+            </button>
+          </div>
+
+          {splits.length === 0 ? (
+            <motion.button
+              type="button" whileTap={{ scale: 0.98 }}
+              onClick={() => setShowSplitBill(true)}
+              style={{ width: '100%', padding: '28px 20px', borderRadius: 20, background: '#FFF3E8', border: '1.5px dashed #FD824050', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+            >
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#FD8240', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={22} color="#fff" />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', marginBottom: 4 }}>
+                  {lang === 'sw' ? 'Gawanya Bili Yako' : 'Split Your First Bill'}
+                </p>
+                <p style={{ fontSize: 13, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
+                  {lang === 'sw' ? 'Gawanya gharama kwa urahisi' : 'Easily split costs with friends'}
+                </p>
+              </div>
+            </motion.button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {splits.map(split => {
+                const totalParticipants = split.participants.length;
+                const paidCount = split.participants.filter(p => p.paid).length;
+                const perPerson = split.total / totalParticipants;
+                const settled = paidCount === totalParticipants;
+                return (
+                  <MkCard key={split.id}>
+                    <div style={{ padding: 16 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 15, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', marginBottom: 2 }}>{split.description}</p>
+                          <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
+                            {split.createdAt.toLocaleDateString(lang === 'sw' ? 'sw' : 'en', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                          <p style={{ fontSize: 16, fontWeight: 600, color: '#1A3D2E', fontFamily: 'Geist, sans-serif' }}>{fmt(split.total)}</p>
+                          <p style={{ fontSize: 11, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>{fmt(perPerson)}/{lang === 'sw' ? 'kila mtu' : 'person'}</p>
+                        </div>
+                      </div>
+
+                      {/* Participants row */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', gap: 0 }}>
+                          {split.participants.map((p, i) => (
+                            <div key={p.name} style={{
+                              width: 30, height: 30, borderRadius: '50%',
+                              background: p.color, border: '2px solid #fff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              marginLeft: i === 0 ? 0 : -8,
+                              position: 'relative', zIndex: split.participants.length - i,
+                            }}>
+                              {p.paid
+                                ? <Check size={12} color="#fff" strokeWidth={3} />
+                                : <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif' }}>{p.initials}</span>}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{
+                          padding: '4px 10px', borderRadius: 999,
+                          background: settled ? '#F0F7F4' : '#FFF3E8',
+                        }}>
+                          <span style={{ fontSize: 11, fontWeight: 500, color: settled ? '#4E886F' : '#FD8240', fontFamily: 'Geist, sans-serif' }}>
+                            {settled
+                              ? (lang === 'sw' ? 'Imelipwa' : 'Settled')
+                              : `${paidCount}/${totalParticipants} ${lang === 'sw' ? 'wamelipa' : 'paid'}`}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </MkCard>
+                );
+              })}
+
+              <button
+                type="button" onClick={() => setShowSplitBill(true)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', borderRadius: 16, background: '#FFF3E8', border: '1.5px dashed #FD824040', cursor: 'pointer' }}
+              >
+                <Plus size={16} color="#FD8240" />
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#FD8240', fontFamily: 'Geist, sans-serif' }}>
+                  {lang === 'sw' ? 'Mgawanyo Mpya' : 'New Split'}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Quick Send ───────────────────────────────────────────────────────── */}
+        <div>
+          <SectionHeader label={lang === 'sw' ? 'Tuma Haraka' : 'Quick Send'} />
           <div style={{ display: 'flex', gap: 16, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}>
             {quickSend.map(c => (
               <button
-                key={c.name}
+                key={c.name} type="button"
                 onClick={() => setShowSend(true)}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
               >
-                <div style={{
-                  width: 52, height: 52, borderRadius: '50%', background: c.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif',
-                }}>
+                <div style={{ width: 52, height: 52, borderRadius: '50%', background: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600, color: '#fff', fontFamily: 'Geist, sans-serif' }}>
                   {c.initials}
                 </div>
                 <span style={{ fontSize: 11, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>{c.name}</span>
               </button>
             ))}
             <button
-              onClick={() => setShowSend(true)}
+              type="button" onClick={() => setShowSplitBill(true)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
             >
-              <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#F6F6F4', border: '1.5px dashed #D0CEC9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
-                +
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#F6F6F4', border: '1.5px dashed #D0CEC9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <UserPlus size={20} color="#928F8B" />
               </div>
               <span style={{ fontSize: 11, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
                 {lang === 'sw' ? 'Zaidi' : 'More'}
@@ -1948,56 +2785,14 @@ function WalletTab({
           </div>
         </div>
 
-        {/* Balance breakdown */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {balances.map(({ label, amount, emoji, color }) => (
-            <MkCard key={label}>
-              <div style={{ padding: 16 }}>
-                <p style={{ fontSize: 18, marginBottom: 4 }}>{emoji}</p>
-                <p style={{ fontSize: 12, color: '#928F8B', marginBottom: 2, fontFamily: 'Geist, sans-serif' }}>{label}</p>
-                <p style={{ fontSize: 16, fontWeight: 500, color, fontFamily: 'Geist, sans-serif' }}>{fmt(amount)}</p>
-              </div>
-            </MkCard>
-          ))}
-        </div>
-
-        {/* Quick actions */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event('maokoto:open-ai'))}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: '#F6F6F4', color: '#4D4845', fontSize: 14, fontWeight: 500,
-              padding: '10px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif',
-            }}
-          >
-            <Sparkles size={14} color="#FD8240" />
-            {lang === 'sw' ? 'Msaidizi wa AI' : 'AI Assistant'}
-          </button>
-          <button
-            type="button"
-            onClick={onSettings}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: '#F6F6F4', color: '#4D4845', fontSize: 14, fontWeight: 500,
-              padding: '10px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif',
-            }}
-          >
-            <Settings size={14} />
-            {lang === 'sw' ? 'Mipangilio' : 'Settings'}
-          </button>
-        </div>
-
-        {/* Recent transactions with full-screen link */}
+        {/* ── Transaction History ───────────────────────────────────────────────── */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <SectionHeader label={historyLabel} sub={`${state.transactions.length} ${lang === 'sw' ? 'jumla' : 'total'}`} />
-            <button
-              type="button"
-              onClick={onHistory}
-              style={{ fontSize: 12, color: '#928F8B', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
+            <SectionHeader
+              label={lang === 'sw' ? 'Historia ya Miamala' : 'Transaction History'}
+              sub={`${state.transactions.length} ${lang === 'sw' ? 'jumla' : 'total'}`}
+            />
+            <button type="button" onClick={onHistory} style={{ fontSize: 12, color: '#928F8B', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Geist, sans-serif', display: 'flex', alignItems: 'center', gap: 4 }}>
               {lang === 'sw' ? 'Angalia zote' : 'See all'} <ChevronRight size={12} />
             </button>
           </div>
@@ -2013,16 +2808,14 @@ function WalletTab({
             <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #F4F4F2', overflow: 'hidden' }}>
               {state.transactions.slice(0, 6).map((tx, i, arr) => (
                 <button
-                  key={tx.id}
-                  type="button"
-                  onClick={() => onTxSelect(tx)}
+                  key={tx.id} type="button" onClick={() => onTxSelect(tx)}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: i < arr.length - 1 ? '1px solid #F4F4F2' : 'none', width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                 >
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#F6F6F4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
                     {getCategoryIcon(tx.category)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 500, color: '#4D4845', fontFamily: 'Geist, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.category}</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: '#1A3D2E', fontFamily: 'Geist, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.notes || tx.category}</p>
                     <p style={{ fontSize: 12, color: '#928F8B', fontFamily: 'Geist, sans-serif' }}>
                       {tx.source} · {tx.date.toLocaleDateString(lang === 'sw' ? 'sw' : 'en', { month: 'short', day: 'numeric' })}
                     </p>
@@ -2037,9 +2830,34 @@ function WalletTab({
         </div>
       </div>
 
-      {/* Send Money modal */}
+      {/* Modals */}
       <AnimatePresence>
         {showSend && <SendMoneyModal lang={lang} onClose={() => setShowSend(false)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showLinkCard && (
+          <LinkCardSheet
+            lang={lang}
+            onClose={() => setShowLinkCard(false)}
+            onAdd={card => {
+              setLinkedCards(prev => [...prev, { ...card, id: Date.now().toString(), monthlySpend: 0 }]);
+              setShowLinkCard(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showSplitBill && (
+          <SplitBillSheet
+            lang={lang}
+            region={state.region}
+            onClose={() => setShowSplitBill(false)}
+            onAdd={split => {
+              setSplits(prev => [{ ...split, id: Date.now().toString(), createdAt: new Date() }, ...prev]);
+              setShowSplitBill(false);
+            }}
+          />
+        )}
       </AnimatePresence>
     </>
   );
