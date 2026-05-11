@@ -363,7 +363,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
 
       <div className="px-4 py-5 space-y-5">
         {/* Financial Health Score */}
-        <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}">
+        <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-emerald-600" />
             <h2 className="text-sm font-bold text-gray-800">
@@ -387,7 +387,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
         </div>
 
         {/* Name input */}
-        <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}">
+        <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">
             {t('yourName', lang)}
           </label>
@@ -416,7 +416,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">
             {t('settings', lang)}
           </h2>
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}>
             {settingsItems.map((item, index) => (
               <motion.button
                 key={index}
@@ -448,7 +448,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">
             🔔 {lang === 'sw' ? 'Mipangilio ya Arifa' : 'Notification Preferences'}
           </h2>
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}>
             {[
               {
                 icon: AlertTriangle,
@@ -596,7 +596,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">
             🔒 {t('security', lang)}
           </h2>
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}>
             <motion.button
               onClick={() => {
                 if (state.appLockEnabled) setShowDisableLockConfirm(true);
@@ -631,7 +631,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
         <PhoneInstallCard lang={lang} />
 
         {/* App Info */}
-        <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }} text-center">
+        <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid #e8e7e4' }}>
           <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${avatarColor} flex items-center justify-center text-2xl mx-auto mb-2`}>
             💰
           </div>

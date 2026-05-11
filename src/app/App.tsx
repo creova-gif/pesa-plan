@@ -639,7 +639,7 @@ function App() {
   return (
     <ErrorBoundary>
       <AppProvider>
-        <div className="w-full max-w-md min-h-screen relative bg-gray-50 overflow-hidden">
+        <div className="w-full max-w-md min-h-screen relative bg-white overflow-hidden">
           <AppContent />
           <Toaster position="top-center" />
         </div>
