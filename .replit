@@ -27,7 +27,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm install && npm run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -42,7 +42,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd mobile && npx expo start --tunnel"
+args = "cd mobile && npm install && npx expo start --tunnel"
 
 [[ports]]
 localPort = 5000
