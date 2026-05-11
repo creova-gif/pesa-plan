@@ -1,0 +1,18 @@
+export const MK = {
+  textPrimary:   '#4D4845',
+  textSecondary: '#928F8B',
+  textExpense:   '#C9362B',
+  textIncome:    '#215B44',
+  fillPrimary:   '#FFFFFF',
+  fillSecondary: '#F6F6F4',
+  fillOrange:    '#FD8240',
+  fillOrangeAlt: '#F55D3E',
+  fillGreen:     '#4E886F',
+  fillGreenDark: '#215B44',
+  border:        '#F4F4F2',
+  iconPrimary:   '#4D4845',
+  iconSecondary: '#A6A4A0',
+  radius:        16,
+  radiusSm:      10,
+  radiusPill:    999,
+} as const;
