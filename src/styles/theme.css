@@ -74,42 +74,6 @@
   --mk-icon-secondary: #6B7280;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* ── Maokoto Design Tokens — Dark ─────────────────────────────────────── */
-    --mk-bg:             #0D0D0D;
-    --mk-bg-alt:         #0A0A0A;
-    --mk-card:           #1C1C1E;
-    --mk-sheet:          #141414;
-    --mk-border:         #2A2A2E;
-    --mk-text:           #FFFFFF;
-    --mk-text-secondary: #6B7280;
-    --mk-text-muted:     rgba(255,255,255,0.45);
-    --mk-text-rgb:       255, 255, 255;
-    --mk-orange:         #FF6B00;
-    --mk-orange-rgb:     255, 107, 0;
-    --mk-red:            #FF3D3D;
-    --mk-red-rgb:        255, 61, 61;
-    --mk-green:          #00E5A0;
-    --mk-green-rgb:      0, 229, 160;
-    --mk-green-dark:     #00B87A;
-    --mk-purple:         #A78BFA;
-    --mk-purple-rgb:     167, 139, 250;
-    --mk-overlay:        rgba(0,0,0,0.45);
-    /* legacy aliases */
-    --mk-text-primary:   #FFFFFF;
-    --mk-text-expense:   #FF3D3D;
-    --mk-text-income:    #00E5A0;
-    --mk-fill-primary:   #1C1C1E;
-    --mk-fill-secondary: #141414;
-    --mk-fill-orange:    #FF6B00;
-    --mk-fill-orange-alt:#FF3D3D;
-    --mk-fill-green:     #00E5A0;
-    --mk-fill-green-dark:#00B87A;
-    --mk-icon-primary:   #FFFFFF;
-    --mk-icon-secondary: #6B7280;
-  }
-}
 
 .dark {
   --background: oklch(0.145 0 0);
