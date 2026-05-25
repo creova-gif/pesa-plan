@@ -158,9 +158,9 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
   };
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: '#f4f3ef' }}>
+    <div className="min-h-screen pb-24" style={{ background: 'var(--mk-bg)' }}>
       {/* Header */}
-      <div className="text-white px-6 pb-5 min-safe-top" style={{ background: '#0b1a0d' }}>
+      <div className="text-white px-6 pb-5 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, var(--mk-orange) 100%)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <button onClick={onBack} className="mr-4 p-2 hover:bg-white/10 rounded-full">
@@ -171,12 +171,12 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
           <button
             onClick={() => setShowFilter(true)}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl transition ${
-              isFiltered ? 'bg-white text-green-700' : 'bg-white/20 text-white hover:bg-white/30'
+              isFiltered ? 'bg-[var(--mk-card)] text-green-700' : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
             <Filter className="w-4 h-4" />
             <span className="text-sm font-medium">{t('filter', lang)}</span>
-            {isFiltered && <span className="w-2 h-2 rounded-full" style={{ background: '#16a34a' }} />}
+            {isFiltered && <span className="w-2 h-2 rounded-full" style={{ background: 'var(--mk-green)' }} />}
           </button>
         </div>
         <p className="text-sm opacity-80 ml-14">
@@ -186,7 +186,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
       </div>
 
       {/* Date range + search sticky bar */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+      <div className="bg-[var(--mk-card)] border-b border-[var(--mk-border)] sticky top-0 z-10 shadow-sm">
         {/* Date chips */}
         <div className="px-4 pt-2.5 pb-0 flex gap-2 overflow-x-auto">
           {([
@@ -201,9 +201,9 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
               className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition ${
                 filterDateRange === opt.value
                   ? 'text-white'
-                  : 'text-gray-600 hover:bg-[#e8e7e4]'
+                  : 'text-[var(--mk-text-secondary)] hover:bg-[var(--mk-border)]'
               }`}
-            style={filterDateRange === opt.value ? { background: '#16a34a' } : { background: '#eae9e6' }}
+            style={filterDateRange === opt.value ? { background: 'var(--mk-green)' } : { background: 'var(--mk-border)' }}
             >
               {lang === 'sw' ? opt.sw : opt.en}
             </button>
@@ -213,20 +213,20 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
         {/* Search bar */}
         <div className="px-4 py-2.5">
           <div className={`flex items-center gap-2 rounded-xl px-3 py-2 border-2 transition-colors ${
-            searchFocused ? 'bg-white' : 'bg-[#eae9e6]'
-          }`} style={{ borderColor: searchFocused ? '#16a34a' : 'transparent' }}>
-            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+            searchFocused ? 'bg-[var(--mk-card)]' : 'bg-[var(--mk-border)]'
+          }`} style={{ borderColor: searchFocused ? 'var(--mk-green)' : 'transparent' }}>
+            <Search className="w-4 h-4 text-[var(--mk-text-secondary)] shrink-0" />
             <input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               placeholder={lang === 'sw' ? 'Tafuta muamala...' : 'Search transactions...'}
-              className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
+              className="flex-1 text-sm bg-transparent outline-none text-[var(--mk-text-secondary)] placeholder-gray-400"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="p-0.5">
-                <X className="w-3.5 h-3.5 text-gray-400" />
+                <X className="w-3.5 h-3.5 text-[var(--mk-text-secondary)]" />
               </button>
             )}
           </div>
@@ -238,19 +238,19 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mx-4 mt-3 bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}
+          className="mx-4 mt-3 bg-[var(--mk-card)] rounded-2xl overflow-hidden" style={{ border: '1px solid var(--mk-border)' }}
         >
-          <div className="grid grid-cols-3 divide-x divide-gray-100">
+          <div className="grid grid-cols-3 divide-x divide-[var(--mk-border)]">
             <div className="px-3 py-3 text-center">
-              <p className="text-[10px] text-gray-400 mb-0.5">{t('income', lang)}</p>
+              <p className="text-[10px] text-[var(--mk-text-secondary)] mb-0.5">{t('income', lang)}</p>
               <p className="text-sm font-bold text-emerald-600">+{formatCurrency(netSummary.income)}</p>
             </div>
             <div className="px-3 py-3 text-center">
-              <p className="text-[10px] text-gray-400 mb-0.5">{t('expense', lang)}</p>
+              <p className="text-[10px] text-[var(--mk-text-secondary)] mb-0.5">{t('expense', lang)}</p>
               <p className="text-sm font-bold text-red-500">-{formatCurrency(netSummary.expense)}</p>
             </div>
             <div className="px-3 py-3 text-center">
-              <p className="text-[10px] text-gray-400 mb-0.5">{lang === 'sw' ? 'Jumla' : 'Net'}</p>
+              <p className="text-[10px] text-[var(--mk-text-secondary)] mb-0.5">{lang === 'sw' ? 'Jumla' : 'Net'}</p>
               <p className={`text-sm font-bold ${net >= 0 ? 'text-blue-600' : 'text-green-600'}`}>
                 {net >= 0 ? '+' : ''}{formatCurrency(net)}
               </p>
@@ -261,7 +261,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
 
       {/* Swipe hint */}
       {filteredTransactions.length > 0 && (
-        <p className="text-xs text-gray-400 text-center py-2">
+        <p className="text-xs text-[var(--mk-text-secondary)] text-center py-2">
           {lang === 'sw' ? '← Buruta kufuta · Bonyeza kuona maelezo' : '← Swipe to delete · Tap for details'}
         </p>
       )}
@@ -271,10 +271,10 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-10 shadow-md text-center mt-4"
+            className="bg-[var(--mk-card)] rounded-2xl p-10 shadow-md text-center mt-4"
           >
             <p className="text-4xl mb-3">{searchQuery ? '🔍' : '📭'}</p>
-            <p className="text-gray-500 font-medium">
+            <p className="text-[var(--mk-text-secondary)] font-medium">
               {searchQuery
                 ? (lang === 'sw' ? `Hakuna matokeo ya "${searchQuery}"` : `No results for "${searchQuery}"`)
                 : isFiltered ? t('noTransactionsFilter', lang) : t('noTransactionsYet', lang)}
@@ -297,14 +297,14 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                 <div key={dateKey}>
                   {/* Date header */}
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <span className="text-sm font-bold text-gray-700">{getDateLabel(dateKey)}</span>
+                    <span className="text-sm font-bold text-[var(--mk-text-secondary)]">{getDateLabel(dateKey)}</span>
                     <div className="flex items-center gap-2 text-xs">
                       {income > 0 && <span className="text-emerald-600 font-semibold">+{formatCurrency(income)}</span>}
                       {expense > 0 && <span className="text-red-500 font-semibold">-{formatCurrency(expense)}</span>}
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-2xl overflow-hidden">
+                  <div className="bg-[var(--mk-card)] rounded-2xl overflow-hidden">
                     {txs.map((transaction, index) => (
                       <div key={transaction.id} className="relative overflow-hidden">
                         {/* Swipe-revealed buttons */}
@@ -344,8 +344,8 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                           onTouchStart={e => onTouchStart(e, transaction.id)}
                           onTouchEnd={e => onTouchEnd(e, transaction)}
                           initial={{ opacity: 0, x: -20 }}
-                          className={`flex items-center justify-between p-4 bg-white cursor-pointer active:bg-[#f4f3ef] ${
-                            index < txs.length - 1 ? 'border-b border-gray-100' : ''
+                          className={`flex items-center justify-between p-4 bg-[var(--mk-card)] cursor-pointer active:bg-[var(--mk-bg-alt)] ${
+                            index < txs.length - 1 ? 'border-b border-[var(--mk-border)]' : ''
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -369,8 +369,8 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                               );
                             })()}
                             <div className="min-w-0">
-                              <p className="font-semibold text-gray-900 text-sm truncate">{transaction.category}</p>
-                              <p className="text-xs text-gray-400">
+                              <p className="font-semibold text-[var(--mk-text)] text-sm truncate">{transaction.category}</p>
+                              <p className="text-xs text-[var(--mk-text-secondary)]">
                                 {SOURCE_ICONS[transaction.source] ?? '💰'} {transaction.source.toUpperCase()}
                                 {transaction.notes ? ` · ${transaction.notes}` : ''}
                               </p>
@@ -382,9 +382,9 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                               <p className={`font-bold text-sm ${transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
                                 {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                               </p>
-                              <p className="text-xs text-gray-300">{format(transaction.date, 'HH:mm')}</p>
+                              <p className="text-xs text-[var(--mk-text-secondary)]">{format(transaction.date, 'HH:mm')}</p>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-gray-200 shrink-0" />
+                            <ChevronRight className="w-4 h-4 text-[var(--mk-text-secondary)] shrink-0" />
                           </div>
                         </motion.div>
                       </div>
@@ -400,7 +400,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
-                className="w-full py-3.5 bg-white border-2 border-gray-200 rounded-2xl text-sm font-semibold text-gray-700 hover:border-green-400 hover:text-green-600 transition shadow-sm"
+                className="w-full py-3.5 bg-[var(--mk-card)] border-2 border-[var(--mk-border)] rounded-2xl text-sm font-semibold text-[var(--mk-text-secondary)] hover:border-green-400 hover:text-green-600 transition shadow-sm"
               >
                 {lang === 'sw'
                   ? `Pakia zaidi (${filteredTransactions.length - visibleCount} zimebaki)`
@@ -409,7 +409,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
             )}
 
             {filteredTransactions.length <= visibleCount && filteredTransactions.length > 0 && (
-              <p className="text-center text-xs text-gray-300 py-2">
+              <p className="text-center text-xs text-[var(--mk-text-secondary)] py-2">
                 {t('endOfHistory', lang)}
               </p>
             )}
@@ -429,19 +429,19 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 border-t border-[#e8e7e4] p-6 pb-8 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 bg-[var(--mk-card)] rounded-t-3xl z-50 border-t border-[var(--mk-border)] p-6 pb-8 shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+              <div className="w-10 h-1 bg-[var(--mk-border)] rounded-full mx-auto mb-5" />
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-gray-900">{t('filter', lang)}</h3>
-                <button onClick={() => setShowFilter(false)} className="p-2 hover:bg-[#eae9e6] rounded-full">
-                  <X className="w-5 h-5 text-gray-500" />
+                <h3 className="text-lg font-bold text-[var(--mk-text)]">{t('filter', lang)}</h3>
+                <button onClick={() => setShowFilter(false)} className="p-2 hover:bg-[var(--mk-border)] rounded-full">
+                  <X className="w-5 h-5 text-[var(--mk-text-secondary)]" />
                 </button>
               </div>
 
               <div className="mb-5">
-                <p className="text-sm font-semibold text-gray-700 mb-2">{t('type', lang)}</p>
+                <p className="text-sm font-semibold text-[var(--mk-text-secondary)] mb-2">{t('type', lang)}</p>
                 <div className="flex gap-2">
                   {typeOptions.map(opt => (
                     <button
@@ -450,7 +450,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                       className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-medium transition ${
                         filterType === opt.value
                           ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          : 'border-[var(--mk-border)] text-[var(--mk-text-secondary)] hover:border-[var(--mk-border)]'
                       }`}
                     >
                       {opt.label}
@@ -460,7 +460,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
               </div>
 
               <div className="mb-6">
-                <p className="text-sm font-semibold text-gray-700 mb-2">{t('source', lang)}</p>
+                <p className="text-sm font-semibold text-[var(--mk-text-secondary)] mb-2">{t('source', lang)}</p>
                 <div className="flex gap-2 flex-wrap">
                   {sourceOptions.map(opt => (
                     <button
@@ -469,7 +469,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                       className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition ${
                         filterSource === opt.value
                           ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          : 'border-[var(--mk-border)] text-[var(--mk-text-secondary)] hover:border-[var(--mk-border)]'
                       }`}
                     >
                       {opt.label}
@@ -481,13 +481,13 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
               <div className="flex gap-3">
                 <button
                   onClick={() => { setFilterType('all'); setFilterSource('all'); }}
-                  className="flex-1 py-3.5 border-2 border-gray-200 rounded-2xl text-gray-600 font-medium text-sm"
+                  className="flex-1 py-3.5 border-2 border-[var(--mk-border)] rounded-2xl text-[var(--mk-text-secondary)] font-medium text-sm"
                 >
                   {t('clearAll', lang)}
                 </button>
                 <button
                   onClick={() => setShowFilter(false)}
-                  className="flex-1 py-3.5 rounded-2xl text-white font-bold text-sm" style={{ background: '#16a34a' }}
+                  className="flex-1 py-3.5 rounded-2xl text-white font-bold text-sm" style={{ background: 'var(--mk-green)' }}
                 >
                   {t('showResults', lang)}
                 </button>
@@ -509,10 +509,10 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 border-t border-[#e8e7e4] pb-8"
+              className="fixed bottom-0 left-0 right-0 bg-[var(--mk-card)] rounded-t-3xl z-50 border-t border-[var(--mk-border)] pb-8"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mt-4 mb-1" />
+              <div className="w-10 h-1 bg-[var(--mk-border)] rounded-full mx-auto mt-4 mb-1" />
 
               {/* Colored accent bar */}
               <div className={`mx-5 mt-4 rounded-2xl p-5 ${
@@ -525,7 +525,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                     {getCategoryIcon(detailTx.category)}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    <p className="text-xs font-semibold text-[var(--mk-text-secondary)] uppercase tracking-wide">
                       {detailTx.category}
                     </p>
                     <p className={`text-3xl font-black ${
@@ -568,11 +568,11 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
                     value: detailTx.notes,
                   }] : []),
                 ].map(({ icon, label, value }) => (
-                  <div key={label} className="flex items-center gap-3 bg-[#f4f3ef] rounded-xl px-4 py-3">
+                  <div key={label} className="flex items-center gap-3 bg-[var(--mk-bg-alt)] rounded-xl px-4 py-3">
                     <span className="text-lg shrink-0">{icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400">{label}</p>
-                      <p className="text-sm font-semibold text-gray-900 truncate">{value}</p>
+                      <p className="text-xs text-[var(--mk-text-secondary)]">{label}</p>
+                      <p className="text-sm font-semibold text-[var(--mk-text)] truncate">{value}</p>
                     </div>
                   </div>
                 ))}

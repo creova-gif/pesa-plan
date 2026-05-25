@@ -93,9 +93,9 @@ export function InsightsView({ onBack }: InsightsViewProps) {
   ].filter(Boolean) as NonNullable<(typeof insights)[number]>[];
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: '#f4f3ef' }}>
+    <div className="min-h-screen pb-24" style={{ background: 'var(--mk-bg)' }}>
       {/* Header */}
-      <div className="text-white px-6 pb-6 min-safe-top" style={{ background: '#0b1a0d' }}>
+      <div className="text-white px-6 pb-6 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, var(--mk-orange) 100%)' }}>
         <div className="flex items-center mb-2">
           <button onClick={onBack} className="mr-4 p-2 hover:bg-white/10 rounded-full">
             <ArrowLeft className="w-6 h-6" />
@@ -115,13 +115,13 @@ export function InsightsView({ onBack }: InsightsViewProps) {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-8 text-center" style={{ border: '1px solid #e8e7e4' }}
+            className="bg-[var(--mk-card)] rounded-2xl p-8 text-center" style={{ border: '1px solid var(--mk-border)' }}
           >
-            <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">
+            <AlertCircle className="w-10 h-10 text-[var(--mk-text-secondary)] mx-auto mb-3" />
+            <p className="text-[var(--mk-text-secondary)] font-medium">
               {t('addTransactionsPrompt', lang)}
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-[var(--mk-text-secondary)] mt-1">
               {t('insightsWillAppear', lang)}
             </p>
           </motion.div>
@@ -130,7 +130,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
         {/* AI Insights */}
         {insights.length > 0 && (
           <div>
-            <h2 className="text-base font-bold mb-3 text-gray-900">
+            <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
               {t('aiInsights', lang)}
             </h2>
             <div className="space-y-3">
@@ -140,15 +140,15 @@ export function InsightsView({ onBack }: InsightsViewProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}
+                  className="bg-[var(--mk-card)] rounded-2xl p-4" style={{ border: '1px solid var(--mk-border)' }}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`${insight.bg} p-2 rounded-full shrink-0`}>
                       <insight.icon className={`w-5 h-5 ${insight.color}`} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1 text-sm">{insight.title}</h3>
-                      <p className="text-sm text-gray-600">{insight.text}</p>
+                      <h3 className="font-semibold text-[var(--mk-text)] mb-1 text-sm">{insight.title}</h3>
+                      <p className="text-sm text-[var(--mk-text-secondary)]">{insight.text}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -159,14 +159,14 @@ export function InsightsView({ onBack }: InsightsViewProps) {
 
         {/* Weekly Trends - real data */}
         <div>
-          <h2 className="text-base font-bold mb-3 text-gray-900">
+          <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
             {t('weeklyTrends', lang)}
           </h2>
-          <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
+          <div className="bg-[var(--mk-card)] rounded-2xl p-4" style={{ border: '1px solid var(--mk-border)' }}>
             {hasWeeklyData ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={weeklyData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mk-border)" />
                   <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
                   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
@@ -175,7 +175,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-40 flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-40 flex items-center justify-center text-[var(--mk-text-secondary)] text-sm">
                 {t('addTransactionsForChart', lang)}
               </div>
             )}
@@ -183,11 +183,11 @@ export function InsightsView({ onBack }: InsightsViewProps) {
             <div className="flex justify-center gap-6 mt-2">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 bg-emerald-500 rounded-sm" />
-                <span className="text-xs text-gray-600">{t('income', lang)}</span>
+                <span className="text-xs text-[var(--mk-text-secondary)]">{t('income', lang)}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 bg-red-500 rounded-sm" />
-                <span className="text-xs text-gray-600">{t('expense', lang)}</span>
+                <span className="text-xs text-[var(--mk-text-secondary)]">{t('expense', lang)}</span>
               </div>
             </div>
           </div>
@@ -218,24 +218,24 @@ export function InsightsView({ onBack }: InsightsViewProps) {
           if (thisWeekTx.length === 0) return null;
           return (
             <div>
-              <h2 className="text-base font-bold mb-3 text-gray-900">
+              <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
                 {t('thisWeeksReport', lang)}
               </h2>
-              <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid #e8e7e4' }}>
-                <div className="grid grid-cols-3 divide-x divide-gray-100">
+              <div className="bg-[var(--mk-card)] rounded-2xl overflow-hidden" style={{ border: '1px solid var(--mk-border)' }}>
+                <div className="grid grid-cols-3 divide-x divide-[var(--mk-border)]">
                   {[
                     { label: t('income', lang), value: formatCurrency(thisIncome), color: 'text-emerald-600' },
                     { label: t('spent', lang), value: formatCurrency(thisSpent), color: 'text-red-600' },
                     { label: t('saved', lang), value: formatCurrency(Math.max(0, thisSaved)), color: 'text-blue-600' },
                   ].map(({ label, value, color }) => (
                     <div key={label} className="p-4 text-center">
-                      <p className="text-xs text-gray-500 mb-1">{label}</p>
+                      <p className="text-xs text-[var(--mk-text-secondary)] mb-1">{label}</p>
                       <p className={`text-sm font-bold ${color}`}>{value}</p>
                     </div>
                   ))}
                 </div>
                 {spendDiff !== null && (
-                  <div className={`px-4 py-2 text-xs font-medium text-center border-t border-gray-100 ${
+                  <div className={`px-4 py-2 text-xs font-medium text-center border-t border-[var(--mk-border)] ${
                     spendDiff > 0 ? 'text-orange-600 bg-orange-50' : 'text-emerald-600 bg-emerald-50'
                   }`}>
                     {spendDiff > 0
@@ -275,7 +275,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
 
           return (
             <div>
-              <h2 className="text-base font-bold mb-3 text-gray-900">
+              <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
                 {t('predictiveIntelligence', lang)}
               </h2>
               <div className="space-y-3">
@@ -322,7 +322,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
                       className={`rounded-2xl p-3.5 border flex items-start gap-3 ${bg}`}
                     >
                       <span className="text-xl shrink-0">{emoji}</span>
-                      <p className="text-sm text-gray-800">{text}</p>
+                      <p className="text-sm text-[var(--mk-text)]">{text}</p>
                     </motion.div>
                   );
                 })}
@@ -333,7 +333,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
 
         {/* ── 📚 Financial Education — Roadmap Feature 6 ── */}
         <div>
-          <h2 className="text-base font-bold mb-3 text-gray-900">
+          <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
             {t('financialEducation', lang)}
           </h2>
           <FinancialEducation />
@@ -347,10 +347,10 @@ export function InsightsView({ onBack }: InsightsViewProps) {
         {/* Category Breakdown */}
         {pieData.length > 0 && (
           <div>
-            <h2 className="text-base font-bold mb-3 text-gray-900">
+            <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
               {t('categoryBreakdown', lang)}
             </h2>
-            <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
+            <div className="bg-[var(--mk-card)] rounded-2xl p-4" style={{ border: '1px solid var(--mk-border)' }}>
               <ResponsiveContainer width="100%" height={220}>
                 <RechartsPieChart>
                   <Pie
@@ -374,7 +374,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
                 {pieData.map((entry, i) => (
                   <div key={entry.name} className="flex items-center gap-1">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="text-xs text-gray-600">{entry.name}: {formatCurrency(entry.value)}</span>
+                    <span className="text-xs text-[var(--mk-text-secondary)]">{entry.name}: {formatCurrency(entry.value)}</span>
                   </div>
                 ))}
               </div>
@@ -384,7 +384,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
 
         {/* ── Budget Suggestions ── */}
         <div>
-          <h2 className="text-base font-bold mb-3 text-gray-900">
+          <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
             {t('budgetSuggestions', lang)}
           </h2>
           <SmartBudgetBuilder />
@@ -393,21 +393,21 @@ export function InsightsView({ onBack }: InsightsViewProps) {
         {/* Summary Stats */}
         {state.transactions.length > 0 && (
           <div>
-            <h2 className="text-base font-bold mb-3 text-gray-900">
+            <h2 className="text-base font-bold mb-3 text-[var(--mk-text)]">
               {t('summary', lang)}
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
-                <p className="text-xs text-gray-500 mb-1">
+              <div className="bg-[var(--mk-card)] rounded-2xl p-4" style={{ border: '1px solid var(--mk-border)' }}>
+                <p className="text-xs text-[var(--mk-text-secondary)] mb-1">
                   {t('totalTransactions', lang)}
                 </p>
-                <p className="text-xl font-bold text-gray-900">{state.transactions.length}</p>
+                <p className="text-xl font-bold text-[var(--mk-text)]">{state.transactions.length}</p>
               </div>
-              <div className="bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
-                <p className="text-xs text-gray-500 mb-1">
+              <div className="bg-[var(--mk-card)] rounded-2xl p-4" style={{ border: '1px solid var(--mk-border)' }}>
+                <p className="text-xs text-[var(--mk-text-secondary)] mb-1">
                   {t('dailyAverage', lang)}
                 </p>
-                <p className="text-xl font-bold text-gray-900">{formatCurrency(Math.round(avgDailyExpense))}</p>
+                <p className="text-xl font-bold text-[var(--mk-text)]">{formatCurrency(Math.round(avgDailyExpense))}</p>
               </div>
             </div>
           </div>

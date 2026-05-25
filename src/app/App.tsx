@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { useState, ReactNode, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
+import { AppContext, useApp } from './AppContext';
+export { useApp };
 
 // ── Bootstrap i18next (side-effect import — must be first) ────────────────────
 import '@/i18n';
@@ -78,7 +80,7 @@ export interface AppState {
   userName: string;          // Personalized greeting name
 }
 
-interface AppContextType {
+export interface AppContextType {
   state: AppState;
   setLanguage: (lang: Language) => void;
   setRegion: (region: Region) => void;
@@ -112,9 +114,6 @@ interface AppContextType {
   disableAppLock: () => void;
   setUserName: (name: string) => void;
 }
-
-// Context
-const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const defaultState: AppState = {
   language: 'sw',
@@ -579,14 +578,6 @@ function AppProvider({ children }: { children: ReactNode }) {
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
 }
 
 // Import components

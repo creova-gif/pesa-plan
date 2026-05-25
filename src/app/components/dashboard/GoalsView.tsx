@@ -40,7 +40,7 @@ function CircularRing({
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="#f0f0f0"
+        stroke="var(--mk-border)"
         strokeWidth={strokeWidth}
       />
       <motion.circle
@@ -198,9 +198,9 @@ export function GoalsView({ onBack }: GoalsViewProps) {
   const totalTarget = state.goals.reduce((s, g) => s + g.target, 0);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: '#f4f3ef' }}>
+    <div className="min-h-screen pb-24" style={{ background: 'var(--mk-bg)' }}>
       {/* Header */}
-      <div className="text-white px-6 pb-8 min-safe-top" style={{ background: '#0b1a0d' }}>
+      <div className="text-white px-6 pb-8 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, var(--mk-orange) 100%)' }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full">
@@ -237,19 +237,19 @@ export function GoalsView({ onBack }: GoalsViewProps) {
 
       {/* Overall progress bar */}
       {state.goals.length > 1 && totalTarget > 0 && (
-        <div className="mx-4 mt-4 bg-white rounded-2xl p-4" style={{ border: '1px solid #e8e7e4' }}>
+        <div className="mx-4 mt-4 bg-[var(--mk-card)] rounded-2xl p-4" style={{ border: '1px solid var(--mk-border)' }}>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <span className="text-xs font-semibold text-[var(--mk-text-secondary)] uppercase tracking-wide">
               {lang === 'sw' ? 'Jumla ya Maendeleo' : 'Overall Progress'}
             </span>
-            <span className="text-xs font-bold" style={{ color: '#15803d' }}>
+            <span className="text-xs font-bold" style={{ color: 'var(--mk-green)' }}>
               {fmt(totalSaved)} / {fmt(totalTarget)}
             </span>
           </div>
-          <div className="h-2.5 rounded-full overflow-hidden" style={{ background: '#eae9e6' }}>
+          <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--mk-border)' }}>
             <motion.div
               className="h-full rounded-full"
-              style={{ background: '#16a34a' }}
+              style={{ background: 'var(--mk-green)' }}
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((totalSaved / totalTarget) * 100, 100)}%` }}
               transition={{ duration: 1, ease: 'easeOut' }}
@@ -273,10 +273,10 @@ export function GoalsView({ onBack }: GoalsViewProps) {
             >
               🎯
             </motion.div>
-            <h2 className="text-lg font-bold text-gray-800 mb-1">
+            <h2 className="text-lg font-bold text-[var(--mk-text)] mb-1">
               {lang === 'sw' ? 'Weka Lengo Lako' : 'Set Your First Goal'}
             </h2>
-            <p className="text-sm text-gray-500 mb-6 max-w-xs mx-auto">
+            <p className="text-sm text-[var(--mk-text-secondary)] mb-6 max-w-xs mx-auto">
               {lang === 'sw'
                 ? 'Weka lengo la akiba na ufuatilie maendeleo yako kila siku.'
                 : 'Create a savings goal and track your progress every day.'}
@@ -285,7 +285,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
               whileTap={{ scale: 0.96 }}
               onClick={() => setShowAddGoal(true)}
               className="text-white px-8 py-3.5 rounded-2xl font-bold text-sm"
-              style={{ background: '#16a34a' }}
+              style={{ background: 'var(--mk-green)' }}
             >
               + {t('addGoal', lang)}
             </motion.button>
@@ -307,7 +307,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.07 }}
               className="relative overflow-hidden rounded-2xl"
-              style={{ border: '1px solid #e8e7e4' }}
+              style={{ border: '1px solid var(--mk-border)' }}
             >
               {/* Swipe-revealed delete button */}
               <AnimatePresence>
@@ -338,7 +338,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                 onTouchStart={handleGoalSwipeStart}
                 onTouchEnd={e => handleGoalSwipeEnd(e, goal.id)}
-                className={`bg-white ${goal.completed ? 'opacity-80' : ''}`}
+                className={`bg-[var(--mk-card)] ${goal.completed ? 'opacity-80' : ''}`}
               >
                 {isUrgent && (
                   <div className="bg-orange-50 border-b border-orange-100 px-4 py-1.5 flex items-center gap-2">
@@ -369,7 +369,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                       />
                       <div className="absolute inset-0 flex items-center justify-center flex-col">
                         <span className="text-xl leading-none">{goal.emoji ?? '🎯'}</span>
-                        <span className="text-[10px] font-black text-gray-700 leading-tight">
+                        <span className="text-[10px] font-black text-[var(--mk-text-secondary)] leading-tight">
                           {progress.toFixed(0)}%
                         </span>
                       </div>
@@ -378,13 +378,13 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
-                        <h3 className="font-bold text-gray-900 text-sm leading-tight truncate pr-2">{goal.title}</h3>
+                        <h3 className="font-bold text-[var(--mk-text)] text-sm leading-tight truncate pr-2">{goal.title}</h3>
                         {goal.completed && (
                           <span className="text-lg shrink-0">🏆</span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {fmt(goal.current)} <span className="text-gray-300">/ {fmt(goal.target)}</span>
+                      <p className="text-xs text-[var(--mk-text-secondary)] mt-0.5">
+                        {fmt(goal.current)} <span className="text-[var(--mk-text-secondary)]">/ {fmt(goal.target)}</span>
                       </p>
                       {dailyRequired !== null && dailyRequired > 0 && !goal.completed && (
                         <div className="flex items-center gap-1 mt-1.5">
@@ -406,14 +406,14 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                       <div
                         key={ms}
                         className={`flex-1 h-1.5 rounded-full transition-colors ${
-                          progress >= ms ? 'bg-green-600' : 'bg-[#eae9e6]'
+                          progress >= ms ? 'bg-green-600' : 'bg-[var(--mk-border)]'
                         }`}
                       />
                     ))}
                   </div>
                   <div className="flex justify-between px-0.5">
                     {MILESTONE_STEPS.map(ms => (
-                      <span key={ms} className={`text-[9px] font-bold ${progress >= ms ? 'text-green-600' : 'text-gray-300'}`}>
+                      <span key={ms} className={`text-[9px] font-bold ${progress >= ms ? 'text-green-600' : 'text-[var(--mk-text-secondary)]'}`}>
                         {ms}%
                       </span>
                     ))}
@@ -444,7 +444,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
             className="w-full border-2 border-dashed border-purple-300 rounded-2xl p-6 flex flex-col items-center hover:border-purple-500 hover:bg-purple-50 transition"
           >
             <Plus className="w-7 h-7 text-purple-400 mb-1.5" />
-            <p className="text-gray-600 font-semibold text-sm">{t('addGoal', lang)}</p>
+            <p className="text-[var(--mk-text-secondary)] font-semibold text-sm">{t('addGoal', lang)}</p>
           </motion.button>
         )}
       </div>
@@ -461,16 +461,16 @@ export function GoalsView({ onBack }: GoalsViewProps) {
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 border-t border-[#e8e7e4] p-5 pb-8 max-h-[92vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 bg-[var(--mk-card)] rounded-t-3xl z-50 border-t border-[var(--mk-border)] p-5 pb-8 max-h-[92vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-              <h2 className="text-lg font-bold mb-4 text-gray-900">🎯 {t('addGoal', lang)}</h2>
+              <div className="w-10 h-1 bg-[var(--mk-border)] rounded-full mx-auto mb-4" />
+              <h2 className="text-lg font-bold mb-4 text-[var(--mk-text)]">🎯 {t('addGoal', lang)}</h2>
 
               <div className="space-y-4">
                 {/* Emoji + Name row */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-1.5">
+                  <label className="text-xs font-semibold text-[var(--mk-text-secondary)] uppercase tracking-wide block mb-1.5">
                     {t('goalName', lang)}
                   </label>
                   <div className="flex gap-2">
@@ -484,7 +484,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                       placeholder={lang === 'sw' ? 'Mf: Simu mpya, Ada ya shule...' : 'e.g. New phone, School fees...'}
                       value={newGoalTitle}
                       onChange={e => setNewGoalTitle(e.target.value)}
-                      className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition"
+                      className="flex-1 border-2 border-[var(--mk-border)] rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition"
                     />
                   </div>
                   {/* Emoji picker */}
@@ -494,14 +494,14 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        className="mt-2 bg-[#f4f3ef] rounded-xl p-3 grid grid-cols-10 gap-1.5"
+                        className="mt-2 bg-[var(--mk-bg-alt)] rounded-xl p-3 grid grid-cols-10 gap-1.5"
                       >
                         {GOAL_EMOJIS.map(em => (
                           <button
                             key={em}
                             onClick={() => { setNewGoalEmoji(em); setShowEmojiPicker(false); }}
                             className={`text-xl w-8 h-8 flex items-center justify-center rounded-lg transition ${
-                              newGoalEmoji === em ? 'bg-purple-200' : 'hover:bg-gray-200'
+                              newGoalEmoji === em ? 'bg-purple-200' : 'hover:bg-[var(--mk-border)]'
                             }`}
                           >
                             {em}
@@ -514,7 +514,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
 
                 {/* Target amount */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-1.5">
+                  <label className="text-xs font-semibold text-[var(--mk-text-secondary)] uppercase tracking-wide block mb-1.5">
                     {t('targetAmountLabel', lang)}
                   </label>
                   <input
@@ -522,7 +522,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                     placeholder="200,000"
                     value={newGoalTarget}
                     onChange={e => setNewGoalTarget(e.target.value)}
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-purple-500 transition"
+                    className="w-full border-2 border-[var(--mk-border)] rounded-xl px-4 py-3 text-lg font-bold outline-none focus:border-purple-500 transition"
                   />
                   <div className="flex gap-2 mt-2 flex-wrap">
                     {QUICK_TARGETS.map(amt => (
@@ -532,7 +532,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                         className={`px-3 py-1.5 rounded-xl border-2 text-xs font-semibold transition ${
                           newGoalTarget === amt.toString()
                             ? 'border-purple-500 bg-purple-50 text-purple-700'
-                            : 'border-gray-200 text-gray-600'
+                            : 'border-[var(--mk-border)] text-[var(--mk-text-secondary)]'
                         }`}
                       >
                         {amt >= 1000000 ? `${amt / 1000000}M` : amt >= 1000 ? `${amt / 1000}k` : amt}
@@ -543,7 +543,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
 
                 {/* Deadline */}
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide block mb-1.5">
+                  <label className="text-xs font-semibold text-[var(--mk-text-secondary)] uppercase tracking-wide block mb-1.5">
                     <Calendar className="w-3 h-3 inline mr-1" />
                     {t('deadlineDaysOptional', lang)}
                   </label>
@@ -552,7 +552,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                     placeholder={lang === 'sw' ? 'Mf: 90 (siku 90)' : 'e.g. 90 (days from now)'}
                     value={newGoalDeadlineDays}
                     onChange={e => setNewGoalDeadlineDays(e.target.value)}
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition"
+                    className="w-full border-2 border-[var(--mk-border)] rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 transition"
                   />
                   {newGoalTarget && newGoalDeadlineDays && parseInt(newGoalDeadlineDays) > 0 && (() => {
                     const daily = Math.ceil(parseInt(newGoalTarget) / parseInt(newGoalDeadlineDays));
@@ -572,7 +572,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setShowAddGoal(false)}
-                    className="flex-1 py-3.5 border-2 border-gray-200 rounded-2xl text-gray-700 font-semibold text-sm"
+                    className="flex-1 py-3.5 border-2 border-[var(--mk-border)] rounded-2xl text-[var(--mk-text-secondary)] font-semibold text-sm"
                   >
                     {t('cancel', lang)}
                   </button>
@@ -608,14 +608,14 @@ export function GoalsView({ onBack }: GoalsViewProps) {
               <motion.div
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 border-t border-[#e8e7e4] p-5 pb-8"
+                className="fixed bottom-0 left-0 right-0 bg-[var(--mk-card)] rounded-t-3xl z-50 border-t border-[var(--mk-border)] p-5 pb-8"
                 onClick={e => e.stopPropagation()}
               >
-                <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+                <div className="w-10 h-1 bg-[var(--mk-border)] rounded-full mx-auto mb-4" />
                 <div className="flex items-center gap-3 mb-4">
                   <span className="text-3xl">{goal.emoji ?? '🎯'}</span>
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900">{goal.title}</h2>
+                    <h2 className="text-lg font-bold text-[var(--mk-text)]">{goal.title}</h2>
                     <p className="text-xs text-green-700 font-medium">
                       {t('goalRemaining', lang)}: {fmt(remaining)} · {progress.toFixed(0)}% {lang === 'sw' ? 'imekamilika' : 'done'}
                     </p>
@@ -627,19 +627,19 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                   <div className="relative w-20 h-20">
                     <CircularRing progress={progress} size={80} strokeWidth={7} color={ringColor(progress)} completed={goal.completed} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-sm font-black text-gray-800">{progress.toFixed(0)}%</span>
+                      <span className="text-sm font-black text-[var(--mk-text)]">{progress.toFixed(0)}%</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center border-2 border-purple-500 rounded-2xl mb-4 overflow-hidden">
-                  <span className="px-3 text-sm text-gray-400">{symbol}</span>
+                  <span className="px-3 text-sm text-[var(--mk-text-secondary)]">{symbol}</span>
                   <input
                     type="number"
                     placeholder="0"
                     value={contributionAmount}
                     onChange={e => setContributionAmount(e.target.value)}
-                    className="flex-1 py-3 text-2xl font-black text-gray-900 outline-none"
+                    className="flex-1 py-3 text-2xl font-black text-[var(--mk-text)] outline-none"
                     autoFocus
                   />
                 </div>
@@ -652,7 +652,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                       className={`flex-1 py-2 rounded-xl border-2 text-xs font-bold transition ${
                         contributionAmount === a.toString()
                           ? 'border-purple-600 bg-purple-50 text-purple-800'
-                          : 'border-gray-200 text-gray-600'
+                          : 'border-[var(--mk-border)] text-[var(--mk-text-secondary)]'
                       }`}
                     >
                       {a >= 1000 ? `${a / 1000}k` : a}
@@ -663,7 +663,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowContribute(null)}
-                    className="flex-1 py-3.5 border-2 border-gray-200 rounded-2xl text-gray-700 font-semibold text-sm"
+                    className="flex-1 py-3.5 border-2 border-[var(--mk-border)] rounded-2xl text-[var(--mk-text-secondary)] font-semibold text-sm"
                   >
                     {t('cancel', lang)}
                   </button>
@@ -694,23 +694,23 @@ export function GoalsView({ onBack }: GoalsViewProps) {
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 border-t border-[#e8e7e4] max-h-[88vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 bg-[var(--mk-card)] rounded-t-3xl z-50 border-t border-[var(--mk-border)] max-h-[88vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
-              <div className="sticky top-0 bg-white px-5 pt-5 pb-3 border-b border-gray-100">
-                <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+              <div className="sticky top-0 bg-[var(--mk-card)] px-5 pt-5 pb-3 border-b border-[var(--mk-border)]">
+                <div className="w-10 h-1 bg-[var(--mk-border)] rounded-full mx-auto mb-4" />
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{detailGoal.emoji ?? '🎯'}</span>
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900">{detailGoal.title}</h2>
+                      <h2 className="text-lg font-bold text-[var(--mk-text)]">{detailGoal.title}</h2>
                       {detailGoal.completed && (
                         <span className="text-xs text-emerald-600 font-semibold">✅ {t('completed', lang)}</span>
                       )}
                     </div>
                   </div>
-                  <button onClick={() => setShowDetail(null)} className="p-2 hover:bg-[#eae9e6] rounded-full">
-                    <X className="w-5 h-5 text-gray-500" />
+                  <button onClick={() => setShowDetail(null)} className="p-2 hover:bg-[var(--mk-border)] rounded-full">
+                    <X className="w-5 h-5 text-[var(--mk-text-secondary)]" />
                   </button>
                 </div>
               </div>
@@ -727,10 +727,10 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                       completed={detailGoal.completed}
                     />
                     <div className="absolute inset-0 flex items-center justify-center flex-col">
-                      <span className="text-2xl font-black text-gray-900">
+                      <span className="text-2xl font-black text-[var(--mk-text)]">
                         {Math.min((detailGoal.current / detailGoal.target) * 100, 100).toFixed(0)}%
                       </span>
-                      <span className="text-xs text-gray-400">{lang === 'sw' ? 'imekamilika' : 'complete'}</span>
+                      <span className="text-xs text-[var(--mk-text-secondary)]">{lang === 'sw' ? 'imekamilika' : 'complete'}</span>
                     </div>
                   </div>
                 </div>
@@ -766,12 +766,12 @@ export function GoalsView({ onBack }: GoalsViewProps) {
                       : {
                           label: lang === 'sw' ? 'Siku Zilizobaki' : 'Days Left',
                           value: getDaysLeft(detailGoal) !== null ? `${getDaysLeft(detailGoal)}` : '—',
-                          color: 'text-gray-700',
-                          bg: 'bg-[#f4f3ef]',
+                          color: 'text-[var(--mk-text-secondary)]',
+                          bg: 'bg-[var(--mk-bg-alt)]',
                         },
                   ].map(({ label, value, color, bg }) => (
                     <div key={label} className={`${bg} rounded-2xl p-4`}>
-                      <p className="text-xs text-gray-500 mb-1">{label}</p>
+                      <p className="text-xs text-[var(--mk-text-secondary)] mb-1">{label}</p>
                       <p className={`text-base font-black ${color}`}>{value}</p>
                     </div>
                   ))}
@@ -779,28 +779,28 @@ export function GoalsView({ onBack }: GoalsViewProps) {
 
                 {/* Projected date */}
                 {getProjectedDate(detailGoal) && !detailGoal.completed && (
-                  <div className="flex items-center gap-3 bg-[#f4f3ef] rounded-2xl p-4">
+                  <div className="flex items-center gap-3 bg-[var(--mk-bg-alt)] rounded-2xl p-4">
                     <Calendar className="w-5 h-5 text-green-600 shrink-0" />
                     <div>
-                      <p className="text-xs text-gray-500">{lang === 'sw' ? 'Tarehe ya Mwisho' : 'Deadline'}</p>
-                      <p className="text-sm font-bold text-gray-900">{getProjectedDate(detailGoal)}</p>
+                      <p className="text-xs text-[var(--mk-text-secondary)]">{lang === 'sw' ? 'Tarehe ya Mwisho' : 'Deadline'}</p>
+                      <p className="text-sm font-bold text-[var(--mk-text)]">{getProjectedDate(detailGoal)}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Milestones */}
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  <p className="text-xs font-semibold text-[var(--mk-text-secondary)] uppercase tracking-wide mb-3">
                     {lang === 'sw' ? 'Hatua za Maendeleo' : 'Progress Milestones'}
                   </p>
                   <div className="space-y-2">
                     {MILESTONE_STEPS.map(ms => {
                       const reached = (detailGoal.current / detailGoal.target) * 100 >= ms;
                       return (
-                        <div key={ms} className={`flex items-center gap-3 p-3 rounded-xl ${reached ? 'bg-emerald-50' : 'bg-[#f4f3ef]'}`}>
+                        <div key={ms} className={`flex items-center gap-3 p-3 rounded-xl ${reached ? 'bg-emerald-50' : 'bg-[var(--mk-bg-alt)]'}`}>
                           <span className="text-lg">{reached ? '✅' : '⬜'}</span>
                           <div className="flex-1">
-                            <p className={`text-sm font-semibold ${reached ? 'text-emerald-700' : 'text-gray-400'}`}>
+                            <p className={`text-sm font-semibold ${reached ? 'text-emerald-700' : 'text-[var(--mk-text-secondary)]'}`}>
                               {ms}% — {fmt(Math.round(detailGoal.target * ms / 100))}
                             </p>
                           </div>
@@ -842,7 +842,7 @@ export function GoalsView({ onBack }: GoalsViewProps) {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: 'spring', damping: 20 }}
-              className="bg-white rounded-3xl p-8 text-center max-w-sm w-full" style={{ border: '1px solid #e8e7e4' }}
+              className="bg-[var(--mk-card)] rounded-3xl p-8 text-center max-w-sm w-full" style={{ border: '1px solid var(--mk-border)' }}
             >
               <motion.div
                 animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
@@ -851,10 +851,10 @@ export function GoalsView({ onBack }: GoalsViewProps) {
               >
                 {celebrationMilestone === 100 ? '🏆' : celebrationMilestone === 75 ? '🥳' : celebrationMilestone === 50 ? '🎉' : '⭐'}
               </motion.div>
-              <h2 className="text-2xl font-black text-gray-900 mb-1">
+              <h2 className="text-2xl font-black text-[var(--mk-text)] mb-1">
                 {celebrationMilestone === 100 ? t('congratulations', lang) : `${celebrationMilestone}%!`}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-[var(--mk-text-secondary)]">
                 {celebrationMilestone === 100
                   ? (lang === 'sw' ? `Umefika lengo lako la "${celebratedGoal}"!` : `You've reached your goal "${celebratedGoal}"!`)
                   : (lang === 'sw'
