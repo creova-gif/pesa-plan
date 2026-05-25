@@ -1,0 +1,33 @@
+Maokoto Application Architecture Mapping Plan
+This plan outlines the approach to completely map and document the architecture of the Maokoto (Pesa Plan) financial management application. The goal is to provide a comprehensive understanding of the codebase structure, component interactions, and state management to facilitate future maintenance and feature development.
+
+User Review Required
+IMPORTANT
+
+Please review the proposed areas of focus and answer the open questions before I begin creating the architecture documentation. I noticed the repository was missing locally and had to be re-cloned, so please let me know if there are any specific branches or recent changes I should be aware of.
+
+Open Questions
+WARNING
+
+AI Assistant Component: During my initial scan, I couldn't clearly identify the files corresponding to the "AI assistant". Could you point me to the specific files or directories where the AI assistant logic is located?
+Architecture Document Format: Do you have a preferred format for the architecture document (e.g., Markdown file, diagrams using Mermaid syntax)? I plan to create a detailed architecture.md artifact.
+Proposed Changes
+I will create a comprehensive architecture.md document that covers the following areas:
+
+State Management
+Analyze lib/AppContext.tsx to understand how global state is managed, provided, and consumed across the app.
+Document the structure of the context, the reducers/actions (if any), and what data is persisted.
+Onboarding Flow
+Examine app/onboarding.tsx to map out the user onboarding process.
+Document the sequence of screens, data collected, and how the onboarding completion state is saved and triggers the transition to the main app.
+Dashboard and Navigation
+Analyze the tab-based navigation structure in app/(tabs)/_layout.tsx.
+Map out the main dashboard (app/(tabs)/index.tsx) and its interaction with other tabs (budget.tsx, invest.tsx, savings.tsx, wallet.tsx).
+Document how financial data is fetched and presented on the dashboard.
+Component Interactions
+Analyze reusable components in the components/ directory (e.g., AddTransactionModal.tsx, GoalsModal.tsx, HistoryView.tsx).
+Map out how these components interact with the global state and the main screens.
+Verification Plan
+Manual Verification
+Review the generated architecture.md document to ensure it accurately reflects the current state of the codebase.
+Validate that the documented data flows and state management patterns match the actual implementation in the files.
