@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, X, AlertTriangle, CheckCircle, TrendingUp, Target, Flame } from 'lucide-react';
+import { Bell, X, AlertTriangle, CheckCircle, TrendingUp, Target, Flame, RefreshCw } from 'lucide-react';
 import { useApp } from '@/app/App';
 import { t } from '@/app/utils/translations';
 import { formatCurrency } from '@/app/utils/currency';
+import { detectRecurring } from '@/app/utils/recurringDetect';
 
 /** Risk 2 — Notification System (in-app computed alerts) */
 
@@ -153,6 +154,27 @@ export function NotificationCenter() {
         },
       });
     }
+
+    // ── 6: Subscription / recurring bill due soon ──
+    const upcomingBills = detectRecurring(state.transactions).filter(r => r.daysUntil >= 0 && r.daysUntil <= 7);
+    upcomingBills.forEach(bill => {
+      const label = bill.daysUntil === 0
+        ? (lang === 'sw' ? 'Leo' : 'Today')
+        : (lang === 'sw' ? `Siku ${bill.daysUntil}` : `${bill.daysUntil} day${bill.daysUntil === 1 ? '' : 's'}`);
+      list.push({
+        id: `bill-due-${bill.category}-${bill.nextDue.toISOString().split('T')[0]}`,
+        type: bill.daysUntil <= 3 ? 'urgent' : 'warning',
+        icon: RefreshCw,
+        title: {
+          sw: `${bill.category} — Inakuja (${label})`,
+          en: `${bill.category} — Due ${label === 'Today' ? 'Today' : `in ${label}`}`,
+        },
+        body: {
+          sw: `Malipo ya kawaida ya ~${fmt(bill.avgAmount)} inatarajiwa ${bill.daysUntil === 0 ? 'leo' : `ndani ya siku ${bill.daysUntil}`}.`,
+          en: `Your regular ~${fmt(bill.avgAmount)} payment is expected ${bill.daysUntil === 0 ? 'today' : `in ${bill.daysUntil} day${bill.daysUntil === 1 ? '' : 's'}`}.`,
+        },
+      });
+    });
 
     return list.filter(a => !dismissed.includes(a.id));
   }, [state, dismissed]);

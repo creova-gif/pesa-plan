@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Zap, Sparkles } from 'lucide-react';
+import { X, Zap, Sparkles, Camera, Loader2 } from 'lucide-react';
 import { useApp, type TransactionType, type PaymentSource } from '@/app/App';
 import { t } from '@/app/utils/translations';
 import { toast } from 'sonner';
@@ -76,6 +76,8 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [amountError, setAmountError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [isScanning, setIsScanning] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const regionCfg = REGION_CONFIG[state.region];
   const symbol = regionCfg.symbol;
@@ -140,6 +142,68 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
     setCategory(suggestion.category);
     setAmount(suggestion.amount.toString());
     setSource(suggestion.source);
+  };
+
+  const handleReceiptScan = async (file: File) => {
+    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      toast.error(lang === 'sw' ? 'Huduma ya skanning haipo. Weka VITE_ANTHROPIC_API_KEY.' : 'Receipt scanning unavailable. Set VITE_ANTHROPIC_API_KEY.');
+      return;
+    }
+    setIsScanning(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const Anthropic = (await import('@anthropic-ai/sdk')).default;
+      const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+      const mediaType = (file.type === 'image/png' ? 'image/png' : file.type === 'image/gif' ? 'image/gif' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+
+      const msg = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 256,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: 'Extract from this receipt: total amount (number, no currency symbols), merchant or item description (short), date in YYYY-MM-DD format. Reply ONLY with valid JSON: {"amount": 1234, "notes": "KFC Mlimani", "date": "2024-01-15"}. If this is not a receipt, reply {"error": "not a receipt"}.' },
+          ],
+        }],
+      });
+
+      const text = msg.content[0].type === 'text' ? msg.content[0].text : '';
+      const match = text.match(/\{[\s\S]*?\}/);
+      if (!match) throw new Error('No JSON in response');
+      const parsed = JSON.parse(match[0]);
+
+      if (parsed.error) {
+        toast.error(lang === 'sw' ? 'Picha si risiti — jaribu tena' : 'Image is not a receipt — try again');
+        return;
+      }
+
+      if (parsed.amount && !isNaN(Number(parsed.amount))) {
+        setAmount(String(Math.round(Number(parsed.amount))));
+      }
+      if (parsed.notes) {
+        setNotes(parsed.notes);
+        const detected = autoDetectCategory(parsed.notes, lang);
+        if (detected) setCategory(detected);
+      }
+      if (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) {
+        const today = new Date().toISOString().split('T')[0];
+        if (parsed.date <= today) setSelectedDate(parsed.date);
+      }
+
+      toast.success(lang === 'sw' ? '📷 Risiti imetambuliwa!' : '📷 Receipt scanned!', { duration: 2000 });
+    } catch {
+      toast.error(lang === 'sw' ? 'Imeshindwa kusoma risiti — jaribu tena' : 'Failed to read receipt — try again');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -216,10 +280,41 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
               <h2 className="text-lg font-bold">
                 {isExpense ? t('addExpense', lang) : t('addIncome', lang)}
               </h2>
-              <button onClick={onClose} className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition">
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                {isExpense && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isScanning}
+                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition flex items-center gap-1.5 px-2.5 disabled:opacity-50"
+                    title={lang === 'sw' ? 'Piga picha ya risiti' : 'Scan receipt'}
+                  >
+                    {isScanning
+                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      : <Camera className="w-3.5 h-3.5" />}
+                    <span className="text-xs font-medium">
+                      {isScanning
+                        ? (lang === 'sw' ? 'Inasoma...' : 'Scanning...')
+                        : (lang === 'sw' ? 'Risiti' : 'Receipt')}
+                    </span>
+                  </button>
+                )}
+                <button onClick={onClose} className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) handleReceiptScan(file);
+                e.target.value = '';
+              }}
+            />
 
             {/* BIG Amount Input */}
             <div className="flex items-baseline gap-2">

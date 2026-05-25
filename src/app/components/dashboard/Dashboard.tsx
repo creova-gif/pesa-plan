@@ -38,6 +38,7 @@ import { SpendingHeatmap } from './SpendingHeatmap';
 import { CashflowForecast } from './CashflowForecast';
 import { InsightOfDay } from './InsightOfDay';
 import { SmartBudgetBuilder } from './SmartBudgetBuilder';
+import { SubscriptionTracker } from './SubscriptionTracker';
 import { BudgetHealthBars } from './BudgetHealthBars';
 import { LocalBenchmarks } from './LocalBenchmarks';
 import { GrowthShareCard } from './GrowthShareCard';
@@ -1089,6 +1090,9 @@ function BudgetTab({
 
       {/* Local benchmarks — how user compares to region peers */}
       <LocalBenchmarks />
+
+      {/* Subscription / Recurring Bill Tracker */}
+      <SubscriptionTracker />
 
       {/* Articles */}
       <MkCard>
