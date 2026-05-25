@@ -886,7 +886,7 @@ export function AIAssistant() {
           style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 12,
             padding: '11px 16px 11px 12px', borderRadius: 999, cursor: 'pointer',
-            background: 'linear-gradient(135deg, #1a0800 0%, var(--mk-orange) 65%, #c84b00 100%)',
+            background: 'linear-gradient(135deg, #1a0800 0%, #2d1200 70%, #3d1600 100%)',
             border: '1px solid rgba(255,255,255,0.14)',
             boxShadow: '0 6px 28px rgba(var(--mk-orange-rgb),0.45), 0 2px 8px rgba(0,0,0,0.25)',
             position: 'relative', overflow: 'hidden',

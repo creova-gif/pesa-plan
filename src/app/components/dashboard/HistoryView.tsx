@@ -160,7 +160,7 @@ export function HistoryView({ onBack, onEditTransaction }: HistoryViewProps) {
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--mk-bg)' }}>
       {/* Header */}
-      <div className="text-white px-6 pb-5 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, var(--mk-orange) 100%)' }}>
+      <div className="text-white px-6 pb-5 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, #2d1200 100%)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <button onClick={onBack} className="mr-4 p-2 hover:bg-white/10 rounded-full">

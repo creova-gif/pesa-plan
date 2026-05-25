@@ -240,7 +240,7 @@ function WelcomeStep({ onNext, lang }: { onNext: () => void; lang: Language }) {
       {/* ── Hero (top 55%) — dark green ── */}
       <div style={{
         position: 'relative',
-        background: 'linear-gradient(160deg, #1A0A00 0%, #2D1200 40%, var(--mk-orange) 100%)',
+        background: 'linear-gradient(160deg, #0f0600 0%, #1a0800 55%, #2d1200 100%)',
         padding: '48px 28px 32px',
         flexShrink: 0,
         overflow: 'hidden',

@@ -417,7 +417,7 @@ function StocksListScreen({ lang, onSelectStock, onBack }: { lang: string; fmt: 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--mk-bg)' }}>
       {/* Header */}
-      <div style={{ position: 'relative', background: 'linear-gradient(160deg, var(--mk-orange) 0%, var(--mk-red) 100%)', paddingBottom: 52 }}>
+      <div style={{ position: 'relative', background: 'linear-gradient(160deg, #1a0800 0%, #2d1200 100%)', paddingBottom: 52 }}>
         {[0, 1, 2, 3].map(i => (
           <div key={i} style={{ position: 'absolute', top: `${-30 + i * 38}%`, left: '-25%', right: '-25%', height: '45%', borderRadius: '50%', border: '1.5px solid rgba(var(--mk-text-rgb),0.13)', pointerEvents: 'none' }} />
         ))}

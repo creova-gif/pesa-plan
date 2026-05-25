@@ -95,7 +95,7 @@ export function InsightsView({ onBack }: InsightsViewProps) {
   return (
     <div className="min-h-screen pb-24" style={{ background: 'var(--mk-bg)' }}>
       {/* Header */}
-      <div className="text-white px-6 pb-6 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, var(--mk-orange) 100%)' }}>
+      <div className="text-white px-6 pb-6 min-safe-top" style={{ background: 'linear-gradient(160deg, #1a0800 0%, #2d1200 100%)' }}>
         <div className="flex items-center mb-2">
           <button onClick={onBack} className="mr-4 p-2 hover:bg-white/10 rounded-full">
             <ArrowLeft className="w-6 h-6" />
