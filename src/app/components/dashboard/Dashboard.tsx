@@ -28,7 +28,6 @@ import { OfflineIndicator } from './OfflineIndicator';
 import { SpendingNudge } from './SpendingNudge';
 import { BudgetLimitsSheet } from './BudgetLimitsSheet';
 import { EditTransactionDialog } from './EditTransactionDialog';
-import { AIAssistant } from './AIAssistant';
 import { NotificationCenter } from './NotificationCenter';
 import { SavingsChallenge } from './SavingsChallenge';
 import { NetWorthCard } from './NetWorthCard';
@@ -3405,7 +3404,6 @@ export function Dashboard() {
       {showBudgetLimits && (
         <BudgetLimitsSheet onClose={() => setShowBudgetLimits(false)} />
       )}
-      <AIAssistant />
       <NotificationCenter />
 
       {/* Transaction detail sheet */}
