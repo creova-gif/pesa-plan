@@ -64,7 +64,7 @@
     "skillfish": "^1.0.34",
     "sonner": "2.0.3",
     "svgl-react": "^1.1.4",
-    "tailwind-merge": "3.2.0",
+    "tailwind-merge": "3.6.0",
     "tw-animate-css": "1.3.8",
     "vaul": "1.1.2"
   },
