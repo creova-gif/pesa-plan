@@ -6,6 +6,9 @@ import { t } from '@/app/utils/translations';
 import { toast } from 'sonner';
 import { getCategoryIcon } from '@/app/utils/categoryIcons';
 import { REGION_CONFIG, type Region } from '@/app/utils/currency';
+import { browserStorage, readAiConsent, writeAiConsent } from '@/lib/aiConsent.mjs';
+import { cloudAiEnabled, getAiAccessToken, requestReceiptScan } from '@/lib/aiClient';
+import { AiConsentNotice } from './AiConsentNotice';
 
 // ── Feature 1: Auto-categorization keyword map ──────────────────────────────
 const KEYWORD_MAP: Array<{ keywords: string[]; cat: { sw: string; en: string } }> = [
@@ -77,6 +80,7 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
   const [amountError, setAmountError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [isScanning, setIsScanning] = useState(false);
+  const [showConsent, setShowConsent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const regionCfg = REGION_CONFIG[state.region];
@@ -144,58 +148,75 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
     setSource(suggestion.source);
   };
 
-  const handleReceiptScan = async (file: File) => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      toast.error(lang === 'sw' ? 'Huduma ya skanning haipo. Weka VITE_ANTHROPIC_API_KEY.' : 'Receipt scanning unavailable. Set VITE_ANTHROPIC_API_KEY.');
+  const receiptUnavailable = () => {
+    toast.error(lang === 'sw' ? 'Usomaji wa risiti haupatikani.' : 'Receipt scanning is unavailable.');
+  };
+
+  const openReceiptPicker = async () => {
+    const enabled = await cloudAiEnabled();
+    const token = enabled ? await getAiAccessToken() : null;
+    if (!enabled || !token) {
+      receiptUnavailable();
       return;
     }
+    if (readAiConsent(browserStorage()) !== 'granted') {
+      setShowConsent(true);
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleReceiptScan = async (file: File) => {
+    if (readAiConsent(browserStorage()) !== 'granted') {
+      setShowConsent(true);
+      return;
+    }
+    const mediaType = file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/webp'
+      ? file.type
+      : file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === ''
+        ? 'image/jpeg'
+        : null;
+    if (!mediaType) {
+      toast.error(lang === 'sw' ? 'Aina ya picha haitumiki.' : 'Unsupported image type.');
+      return;
+    }
+    if (file.size > 1_000_000) {
+      toast.error(lang === 'sw' ? 'Picha ni kubwa sana.' : 'Image is too large.');
+      return;
+    }
+    const token = await getAiAccessToken();
+    if (!token) {
+      receiptUnavailable();
+      return;
+    }
+
     setIsScanning(true);
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onload = () => resolve((reader.result as string).split(',')[1] || '');
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-
-      const Anthropic = (await import('@anthropic-ai/sdk')).default;
-      const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-      const mediaType = (file.type === 'image/png' ? 'image/png' : file.type === 'image/gif' ? 'image/gif' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
-
-      const msg = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 256,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: 'Extract from this receipt: total amount (number, no currency symbols), merchant or item description (short), date in YYYY-MM-DD format. Reply ONLY with valid JSON: {"amount": 1234, "notes": "KFC Mlimani", "date": "2024-01-15"}. If this is not a receipt, reply {"error": "not a receipt"}.' },
-          ],
-        }],
-      });
-
-      const text = msg.content[0].type === 'text' ? msg.content[0].text : '';
-      const match = text.match(/\{[\s\S]*?\}/);
-      if (!match) throw new Error('No JSON in response');
-      const parsed = JSON.parse(match[0]);
-
-      if (parsed.error) {
-        toast.error(lang === 'sw' ? 'Picha si risiti — jaribu tena' : 'Image is not a receipt — try again');
+      const result = await requestReceiptScan({ mediaType, data: base64 }, token);
+      if (!result.ok) {
+        toast.error(result.reason === 'not_receipt'
+          ? (lang === 'sw' ? 'Picha si risiti — jaribu tena' : 'Image is not a receipt — try again')
+          : (lang === 'sw' ? 'Imeshindwa kusoma risiti — jaribu tena' : 'Failed to read receipt — try again'));
         return;
       }
 
-      if (parsed.amount && !isNaN(Number(parsed.amount))) {
-        setAmount(String(Math.round(Number(parsed.amount))));
+      if (result.amount && Number.isFinite(result.amount)) {
+        setAmount(String(Math.round(result.amount)));
       }
-      if (parsed.notes) {
-        setNotes(parsed.notes);
-        const detected = autoDetectCategory(parsed.notes, lang);
+      if (result.notes) {
+        setNotes(result.notes);
+        const detected = autoDetectCategory(result.notes, lang);
         if (detected) setCategory(detected);
       }
-      if (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) {
+      if (result.date && /^\d{4}-\d{2}-\d{2}$/.test(result.date)) {
         const today = new Date().toISOString().split('T')[0];
-        if (parsed.date <= today) setSelectedDate(parsed.date);
+        if (result.date <= today) setSelectedDate(result.date);
       }
 
       toast.success(lang === 'sw' ? '📷 Risiti imetambuliwa!' : '📷 Receipt scanned!', { duration: 2000 });
@@ -284,7 +305,7 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
               <div className="flex items-center gap-2">
                 {isExpense && (
                   <button
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => { void openReceiptPicker(); }}
                     disabled={isScanning}
                     className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition flex items-center gap-1.5 px-2.5 disabled:opacity-50"
                     title={lang === 'sw' ? 'Piga picha ya risiti' : 'Scan receipt'}
@@ -357,6 +378,22 @@ export function AddTransactionDialog({ type, onClose, prefilledCategory, prefill
           </div>
 
           <div style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {showConsent && (
+              <AiConsentNotice
+                lang={lang}
+                mode="full"
+                onGrant={() => {
+                  writeAiConsent(browserStorage(), 'granted');
+                  setShowConsent(false);
+                  fileInputRef.current?.click();
+                }}
+                onDeny={() => {
+                  writeAiConsent(browserStorage(), 'denied');
+                  setShowConsent(false);
+                }}
+                onReview={() => setShowConsent(true)}
+              />
+            )}
             {/* Smart suggestions */}
             {isExpense && smartSuggestions.length > 0 && (
               <div>

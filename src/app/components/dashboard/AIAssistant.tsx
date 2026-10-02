@@ -1,30 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send } from 'lucide-react';
-import Anthropic from '@anthropic-ai/sdk';
 import { useApp } from '@/app/App';
 import type { Language } from '@/app/App';
 import { t } from '@/app/utils/translations';
 import { getCategoryIcon } from '@/app/utils/categoryIcons';
 import { formatCurrency, REGION_CONFIG } from '@/app/utils/currency';
+import { browserStorage, readAiConsent, writeAiConsent } from '@/lib/aiConsent.mjs';
+import { cloudAiEnabled, getAiAccessToken, requestCoachReply } from '@/lib/aiClient';
+import { AiConsentNotice } from './AiConsentNotice';
 
 interface Message {
   role: 'user' | 'assistant';
   text: string;
 }
 
-// ── Anthropic client (lazy, safe browser init) ─────────────────────────────
-// Wrapped in try/catch — the SDK pulls in Node built-ins that Vite externalizes.
-// If they fail at runtime we fall back to the rule-based engine silently.
-const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-let anthropicClient: Anthropic | null = null;
-if (apiKey) {
-  try {
-    anthropicClient = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-  } catch {
-    console.warn('[Maokoto] Anthropic SDK init failed — using rule-based coach.');
-  }
-}
+type AiConsent = 'granted' | 'denied' | 'unset';
 
 // ── Build a rich system prompt from user's live financial data ─────────────────
 function buildSystemPrompt(state: ReturnType<typeof useApp>['state'], lang: Language): string {
@@ -960,6 +951,9 @@ export function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [cloudReady, setCloudReady] = useState(false);
+  const [consent, setConsent] = useState<AiConsent>(() => readAiConsent(browserStorage()));
+  const [reviewConsent, setReviewConsent] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -987,6 +981,22 @@ export function AIAssistant() {
   }, [messages, isStreaming]);
 
   useEffect(() => {
+    const sync = () => setConsent(readAiConsent(browserStorage()));
+    window.addEventListener('maokoto:ai-consent', sync);
+    return () => window.removeEventListener('maokoto:ai-consent', sync);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    cloudAiEnabled().then(async (enabled) => {
+      const token = enabled ? await getAiAccessToken() : null;
+      if (!cancelled) setCloudReady(Boolean(enabled && token));
+    });
+    return () => { cancelled = true; };
+  }, [open]);
+
+  useEffect(() => {
     const handler = () => {
       setOpen(true);
       setMessages(prev => prev.length === 0 ? initMessages() : prev);
@@ -1004,69 +1014,82 @@ export function AIAssistant() {
     }
   }, [open]);
 
+  const grantConsent = () => {
+    writeAiConsent(browserStorage(), 'granted');
+    setConsent('granted');
+    setReviewConsent(false);
+  };
+
+  const denyConsent = () => {
+    writeAiConsent(browserStorage(), 'denied');
+    setConsent('denied');
+    setReviewConsent(false);
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
     const userMsg: Message = { role: 'user', text };
+    const prior = messages[0]?.role === 'assistant' ? messages.slice(1) : messages;
+    const history = [...prior, userMsg]
+      .slice(-16)
+      .map(m => ({ role: m.role, content: m.text.slice(0, 2000) }));
     setMessages(prev => [...prev, userMsg]);
     setInput('');
 
-    // Build conversation history for Claude (exclude greeting)
-    const history = [...messages, userMsg]
-      .filter(m => !(m.role === 'assistant' && messages.indexOf(m) === 0))
-      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.text }));
+    const useCloud = cloudReady && consent === 'granted';
+    if (!useCloud) {
+      await new Promise(r => setTimeout(r, 320));
+      setMessages(prev => [...prev, { role: 'assistant', text: generateReply(text, state, lang) }]);
+      return;
+    }
 
-    if (anthropicClient) {
-      // ── Streaming Claude API path ──────────────────────────────────────────
-      setIsStreaming(true);
-      const assistantIdx = messages.length + 1;
-      setMessages(prev => [...prev, { role: 'assistant', text: '' }]);
+    setIsStreaming(true);
+    setMessages(prev => [...prev, { role: 'assistant', text: '' }]);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const dropEmpty = () => {
+      setMessages(prev => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === 'assistant' && last.text === '') next.pop();
+        return next;
+      });
+    };
 
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      try {
-        const stream = anthropicClient.messages.stream({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 700,
+    try {
+      const token = await getAiAccessToken();
+      if (controller.signal.aborted) {
+        dropEmpty();
+        return;
+      }
+      const reply = token
+        ? await requestCoachReply({
           system: buildSystemPrompt(state, lang),
           messages: history,
-        });
-
-        let accumulated = '';
-        for await (const event of stream) {
-          if (controller.signal.aborted) break;
-          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-            accumulated += event.delta.text;
-            const snapshot = accumulated;
-            setMessages(prev => {
-              const next = [...prev];
-              next[assistantIdx] = { role: 'assistant', text: snapshot };
-              return next;
-            });
-          }
-        }
-        if (!accumulated) {
-          setMessages(prev => {
-            const next = [...prev];
-            next[assistantIdx] = { role: 'assistant', text: generateReply(text, state, lang) };
-            return next;
-          });
-        }
-      } catch {
-        setMessages(prev => {
-          const next = [...prev];
-          next[assistantIdx] = { role: 'assistant', text: generateReply(text, state, lang) };
-          return next;
-        });
-      } finally {
-        setIsStreaming(false);
-        abortRef.current = null;
+        }, token, controller.signal)
+        : null;
+      if (controller.signal.aborted) {
+        dropEmpty();
+        return;
       }
-    } else {
-      // ── Rule-based fallback ────────────────────────────────────────────────
-      await new Promise(r => setTimeout(r, 320));
-      const reply = generateReply(text, state, lang);
-      setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
+      setMessages(prev => {
+        const next = [...prev];
+        next[next.length - 1] = { role: 'assistant', text: reply || generateReply(text, state, lang) };
+        return next;
+      });
+    } catch {
+      if (controller.signal.aborted) {
+        dropEmpty();
+        return;
+      }
+      setMessages(prev => {
+        const next = [...prev];
+        next[next.length - 1] = { role: 'assistant', text: generateReply(text, state, lang) };
+        return next;
+      });
+    } finally {
+      setIsStreaming(false);
+      abortRef.current = null;
     }
   };
 
@@ -1234,7 +1257,7 @@ export function AIAssistant() {
                         transition={{ duration: 2.2, repeat: Infinity }}
                       />
                       <p style={{ fontSize: 11, color: 'rgba(var(--mk-text-rgb),0.65)' }}>
-                        {anthropicClient ? (lang === 'sw' ? 'Msaidizi wa AI' : lang === 'fr' ? 'Assistant IA' : lang === 'ar' ? 'مساعد الذكاء الاصطناعي' : lang === 'pt' ? 'Assistente IA' : 'AI-Powered') : t('askAboutSpending', lang)}
+                        {cloudReady && consent === 'granted' ? (lang === 'sw' ? 'Msaidizi wa AI' : lang === 'fr' ? 'Assistant IA' : lang === 'ar' ? 'مساعد الذكاء الاصطناعي' : lang === 'pt' ? 'Assistente IA' : 'AI-Powered') : t('askAboutSpending', lang)}
                       </p>
                     </div>
                   </div>
@@ -1353,6 +1376,18 @@ export function AIAssistant() {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {cloudReady && (
+                <div style={{ padding: '0 16px 8px' }}>
+                  <AiConsentNotice
+                    lang={lang}
+                    mode={consent === 'granted' ? 'active' : consent === 'unset' || reviewConsent ? 'full' : 'denied'}
+                    onGrant={grantConsent}
+                    onDeny={denyConsent}
+                    onReview={() => setReviewConsent(true)}
+                  />
                 </div>
               )}
 
