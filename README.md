@@ -6,37 +6,43 @@
 ![License](https://img.shields.io/badge/license-proprietary-red)
 ![Stack](https://img.shields.io/badge/stack-React_%2F_Vite%2C_mobile_companion-blue)
 
-## What this is
-
-Pesa Plan ("pesa" — Swahili for money) is a personal-finance app with wallet, budgeting, savings, and light investing views, an AI assistant for transaction tracking and financial guidance, goal-setting, transaction history, notifications, and an app-lock security feature. There's both a web dashboard and a separate mobile app directory.
-
 ![Pesa Plan dashboard](docs/screenshots/dashboard.png)
 
-## Status: In active development
+## Overview
+Pesa Plan ("pesa" — Swahili for money) is a personal-finance app with wallet, budgeting, savings, and light investing views.
 
-Core budgeting/wallet/savings screens exist across both a web and a mobile codebase, but the two aren't obviously unified yet (worth confirming whether the mobile app and web app share a data model), and there's no backend/persistence layer wired up.
+## Solution
+An AI assistant for transaction tracking and financial guidance, goal-setting, transaction history, notifications, and an app-lock security feature, across both web and a separate mobile app.
 
-### Roadmap
-- Reconcile the web and mobile codebases into one data model
-- Backend/persistence layer
-- Security review of the app-lock feature before handling real financial data
+## Architecture
+Uses a clean environment-variable-based Supabase configuration with an explicit, well-documented offline-only fallback — the app runs fully offline when `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are unset, rather than crashing. This is good practice, preserved intentionally (see `CLAUDE.md`). Whether the two codebases (web, mobile) share one data model has not been confirmed.
 
-## Quickstart
+## Key Capabilities
+- Wallet, budgeting, savings, light investing views
+- AI assistant, goal-setting, transaction history, notifications, app-lock
 
+## Getting Started
 ```bash
 npm i
 npm run dev
 ```
 
-## Folder overview
+## Project Status
+Core screens exist across both web and mobile codebases; not yet confirmed whether they share a data model, and no backend persistence is wired up beyond the optional Supabase connection.
 
-- `src/app/components/dashboard/` — web dashboard (budget, transactions, AI assistant)
-- `components/`, `lib/`, `mobile/` — mobile-side app and shared logic
+## Roadmap
+- [ ] Reconcile the web and mobile codebases into one data model
+- [ ] Backend/persistence layer
+- [ ] Security review of the app-lock feature before handling real financial data
 
 ## Contributing
-
-See the [org-wide CONTRIBUTING.md](https://github.com/creova-gif/.github/blob/main/CONTRIBUTING.md) for guidelines, including our AI-assisted contribution policy.
+See the [org-wide CONTRIBUTING.md](https://github.com/creova-gif/.github/blob/main/CONTRIBUTING.md).
 
 ## License
-
 Proprietary — © CREOVA. All rights reserved.
+
+## Author / Organization
+Built by [Justin Mafie](https://github.com/creova-gif) under CREOVA.
+
+## Documentation
+See `CLAUDE.md`.
