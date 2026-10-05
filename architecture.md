@@ -55,7 +55,7 @@ Regions: Tanzania, Kenya, Uganda, Rwanda, Ghana, Nigeria, and generic East Afric
 │   │   ├── components/
 │   │   │   ├── dashboard/        # All post-onboarding views
 │   │   │   │   ├── Dashboard.tsx         # Tab shell & navigation
-│   │   │   │   ├── AIAssistant.tsx       # Budget coach (Claude + rule engine)
+│   │   │   │   ├── AIAssistant.tsx       # Budget coach (on-device rules, optional gateway)
 │   │   │   │   ├── GoalsView.tsx         # Savings goals management
 │   │   │   │   ├── HistoryView.tsx       # Transaction history & filtering
 │   │   │   │   ├── InsightsView.tsx      # Spending analytics
@@ -345,20 +345,21 @@ A floating chat panel called "Maokoto Budget Coach".
 User message
     │
     ▼
-VITE_ANTHROPIC_API_KEY set?
-    ├─ YES → anthropicClient.messages.stream (claude-haiku-4-5-20251001)
+Gateway enabled, session present, and consent granted?
+    ├─ YES → POST /api/ai/coach
     │              │
-    │         stream fails / empty?
-    │              └─ generateReply() (rule-based fallback)
+    │         failure, rate limit, or gateway disabled?
+    │              └─ generateReply() (rule-based fallback, on device)
     │
     └─ NO  → generateReply() (rule-based engine)
 ```
 
-**Anthropic integration:**
-- SDK: `@anthropic-ai/sdk`, initialised with `dangerouslyAllowBrowser: true`.
-- Model: `claude-haiku-4-5-20251001`.
-- Streaming: `messages.stream` for real-time token rendering.
-- System prompt: injected with live user data — name, user type, balances, net worth, spending categories, budget health, and regional context (M-Pesa, local markets, school fees).
+**Cloud AI:**
+- The browser does not ship a provider SDK or a provider key.
+- `server/aiGateway.mjs` calls the provider with a server-only key. It requires a verified Supabase session, a consent acknowledgement, and an in-memory rate limit.
+- The gateway stays disabled unless `ANTHROPIC_API_KEY`, `SUPABASE_URL`, and `SUPABASE_ANON_KEY` are set on the server. The on-device coach is the default.
+- A consent notice is shown before balances, loans, net worth, or a receipt photo are sent.
+- System prompt (after consent): name, user type, balances, net worth, spending categories, budget health, and regional context (M-Pesa, local markets, school fees).
 
 **Rule-based engine (`generateReply`):**
 - Supports 5 languages: English, Swahili, French, Arabic, Portuguese.
@@ -466,6 +467,7 @@ High-level actions (add transaction, view notifications) use React Native `Modal
 | Legacy migration | `localStorage` | `pesaplan_v1` | Auto-migrated to `maokoto_v1` on first load |
 | PIN salt | `localStorage` | `maokoto_salt_v2` | 16-byte hex string, generated once per install |
 | Crash log | `localStorage` | `pesaplan_crash_log_v1` | Last 20 crash entries, cross-session |
+| AI consent | `localStorage` | `maokoto.aiConsent` | `granted` or `denied`; cloud coach stays off until granted |
 
 ### 5.2 Cloud Sync
 
@@ -485,6 +487,10 @@ An optional Supabase backend can sync the local state. The `schedulePush` functi
 **`AppLock` component** (`src/app/components/dashboard/AppLock.tsx`):
 - Renders a full-screen PIN entry overlay when `appLockEnabled && !unlocked`.
 - 5 failed attempts locks for 30 seconds (exponential backoff pattern).
+
+**Cloud coach:**
+- Provider calls stay in `server/aiGateway.mjs`. The client bundle does not include a provider key or SDK.
+- Balances, loans, net worth, and receipt photos are sent only after the consent notice.
 
 ---
 
@@ -567,14 +573,12 @@ OnboardingFlow (Step 6) user taps "Start Saving"
 ```
 User types message → sends
     │
-    ├─ anthropicClient exists?
+    ├─ gateway enabled, session present, and consent granted?
     │       │
-    │       YES → anthropicClient.messages.stream(systemPrompt + history + message)
-    │               │                                    ↑
-    │               │              (injected: balances, transactions, goals, user profile)
+    │       YES → POST /api/ai/coach (snapshot included only after consent)
     │               │
-    │               ├─ SUCCESS → stream tokens to chat bubble in real time
-    │               └─ FAIL   → generateReply(message, state)
+    │               ├─ SUCCESS → show the reply
+    │               └─ FAIL    → generateReply(message, state)
     │
     └─ NO → generateReply(message, state)
                     │
@@ -599,7 +603,6 @@ User types message → sends
 | `framer-motion` | Animations & gestures |
 | `recharts` | Charting (545KB, largest bundle chunk) |
 | `i18next`, `react-i18next` | Internationalisation |
-| `@anthropic-ai/sdk` | AI assistant (optional, requires API key) |
 | `@supabase/supabase-js` | Cloud sync (optional, requires env vars) |
 | `workbox-*` | Service worker runtime caching |
 
